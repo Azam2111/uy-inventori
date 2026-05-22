@@ -109,6 +109,17 @@ input[type=text]:focus{border-color:var(--muted)}
 .sn{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--text);color:var(--bg);font-size:11px;font-weight:500;align-items:center;justify-content:center;flex-shrink:0}
 code{background:var(--surface);border:1px solid var(--bd);padding:2px 5px;border-radius:4px;font-size:12px}
 .sl{color:#3b82f6}
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);margin-top:4px;z-index:100;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.ac-item{padding:10px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text)}
+.ac-item:active{background:var(--surface)}
+.ac-item i{font-size:13px;color:var(--muted)}
+.ai-check{padding:12px 14px;border-radius:var(--rs);background:var(--am-bg);border:1px solid var(--am-b);color:var(--am-t);font-size:13px;display:flex;flex-direction:column;gap:10px}
+.ai-check-q{font-weight:500;font-size:14px}
+.ai-check-acts{display:flex;gap:8px}
+.ai-yes{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:var(--am-t);color:#fff;font-weight:500;font-size:13px}
+.ai-no{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:none;color:var(--am-t);font-weight:500;font-size:13px}
+.ai-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:8px 0}
 </style>
 </head>
 <body>
@@ -130,6 +141,10 @@ const FIREBASE_CONFIG = {
   appId:             "1:184996111777:web:109dd2394efd370bfcd7e0"
 };
 // ================================================
+//  CLAUDE API KEY — console.anthropic.com dan oling
+// ================================================
+const CLAUDE_API_KEY = "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";
+// ================================================
 
 const CATS = {
   food:      { l: 'Oziq-ovqat', i: 'ti-apple' },
@@ -150,6 +165,7 @@ let state = {
   items: [], tab: 'list', filter: 'all', open: null,
   editItem: null, form: { name:'', category:'food', price:'', status:'need_to_buy' },
   flash: null, synced: false, loaded: !CONFIGURED,
+  acSuggestions: [], aiChecking: false, aiConfirm: null,
 };
 let flashTimer = null;
 const app = document.getElementById('app');
@@ -162,6 +178,52 @@ function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function $id(id)  { return document.getElementById(id); }
 
 function upd(o, noRender) { Object.assign(state, o); if (!noRender) render(); }
+
+// ---- AUTOCOMPLETE ----
+function getAcSuggestions(val) {
+  if (!val || val.length < 2) return [];
+  const q = val.toLowerCase();
+  const names = [...new Set(state.items.map(i => i.name))];
+  return names.filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q).slice(0, 5);
+}
+
+// ---- AI NORMALIZATSIYA ----
+async function aiNormalize(typedName) {
+  if (CLAUDE_API_KEY === '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') return null;
+  const existingNames = [...new Set(state.items.map(i => i.name))];
+  if (!existingNames.length) return null;
+  // Exact match — AI shart emas
+  if (existingNames.some(n => n.toLowerCase() === typedName.toLowerCase())) return null;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 50,
+        messages: [{
+          role: 'user',
+          content: `Foydalanuvchi "${typedName}" deb yozdi. Mavjud mahsulotlar ro'yxati: ${existingNames.map(n=>`"${n}"`).join(', ')}. 
+Agar "${typedName}" ro'yxatdagi biron mahsulot bilan bir xil narsa bo'lsa (imlo xatosi, bosh-kichik harf farqi, dialekt farqi va h.k.), faqat o'sha mahsulot nomini yoz. Agar boshqa narsa bo'lsa, faqat "null" yoz. Boshqa hech narsa yozma.`
+        }]
+      })
+    });
+    const data = await res.json();
+    const answer = data.content?.[0]?.text?.trim();
+    if (!answer || answer === 'null') return null;
+    // Javob ro'yxatda borligini tekshir
+    const match = existingNames.find(n => n.toLowerCase() === answer.toLowerCase());
+    return match || null;
+  } catch(e) {
+    return null;
+  }
+}
 
 function notify(msg, type) {
   clearTimeout(flashTimer);
@@ -220,25 +282,49 @@ function removeItem(id) {
 }
 
 function handleSave() {
-  const { form, editItem } = state;
+  const { form, editItem, aiConfirm } = state;
   if (!form.name.trim()) { notify("Nom kiriting!", 'err'); return; }
+
+  // aiConfirm holati — foydalanuvchi "ha" yoki "yo'q" bosdi
+  const nameToSave = aiConfirm ? aiConfirm.confirmed : form.name.trim();
+
   const p = form.price !== '' ? +form.price : null;
   let next;
   if (editItem) {
     next = state.items.map(i => i.id !== editItem.id ? i : {
-      ...i, name:form.name.trim(), category:form.category, price:p, status:form.status,
+      ...i, name:nameToSave, category:form.category, price:p, status:form.status,
       purchaseDate: form.status==='bought' && i.status!=='bought' ? new Date().toISOString() : i.purchaseDate,
       month: form.status==='bought' && i.status!=='bought' ? curYM() : i.month,
     });
     notify('Yangilandi');
   } else {
     const now = new Date().toISOString();
-    next = [{ id:uid(), name:form.name.trim(), category:form.category, price:p, status:form.status,
+    next = [{ id:uid(), name:nameToSave, category:form.category, price:p, status:form.status,
       dateAdded:now, purchaseDate:form.status==='bought' ? now : null, month:curYM() }, ...state.items];
     notify("Qo'shildi");
   }
   persist(next);
-  upd({ tab:'list', editItem:null, form:{ name:'', category:'food', price:'', status:'need_to_buy' } });
+  upd({ tab:'list', editItem:null, aiConfirm:null, aiChecking:false,
+        form:{ name:'', category:'food', price:'', status:'need_to_buy' } });
+}
+
+async function trySave() {
+  const { form, editItem, aiChecking } = state;
+  if (!form.name.trim()) { notify("Nom kiriting!", 'err'); return; }
+  if (aiChecking) return;
+
+  // AI tekshiruvi — faqat yangi mahsulot qo'shayotganda
+  if (!editItem && CLAUDE_API_KEY !== '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') {
+    upd({ aiChecking: true, acSuggestions: [] });
+    const match = await aiNormalize(form.name.trim());
+    upd({ aiChecking: false });
+    if (match && match !== form.name.trim()) {
+      // AI o'xshash nom topdi — foydalanuvchiga so'ra
+      upd({ aiConfirm: { typed: form.name.trim(), suggested: match, confirmed: null } });
+      return;
+    }
+  }
+  handleSave();
 }
 
 // ---- EVENT DELEGATION ----
@@ -246,23 +332,41 @@ app.addEventListener('click', e => {
   const t = e.target.closest('[data-a]');
   if (!t) return;
   const a = t.dataset.a, v = t.dataset.v;
-  if (a === 'tab')     upd({ tab: v });
-  if (a === 'filter')  upd({ filter: v });
-  if (a === 'toggle')  toggleOpen(v);
-  if (a === 'advance') advance(v);
-  if (a === 'reset')   resetItem(v);
-  if (a === 'remove')  removeItem(v);
-  if (a === 'edit')    startEdit(v);
-  if (a === 'add')     startAdd();
-  if (a === 'cat')     upd({ form: { ...state.form, category: v } });
-  if (a === 'st')      upd({ form: { ...state.form, status: v } });
-  if (a === 'save')    handleSave();
-  if (a === 'cancel')  cancelForm();
+  if (a === 'tab')      upd({ tab: v });
+  if (a === 'filter')   upd({ filter: v });
+  if (a === 'toggle')   toggleOpen(v);
+  if (a === 'advance')  advance(v);
+  if (a === 'reset')    resetItem(v);
+  if (a === 'remove')   removeItem(v);
+  if (a === 'edit')     startEdit(v);
+  if (a === 'add')      startAdd();
+  if (a === 'cat')      upd({ form: { ...state.form, category: v } });
+  if (a === 'st')       upd({ form: { ...state.form, status: v } });
+  if (a === 'save')     trySave();
+  if (a === 'cancel')   cancelForm();
+  if (a === 'ac-pick')  { upd({ form: { ...state.form, name: v }, acSuggestions: [] }); setTimeout(()=>{ const ni=$id('ninp'); if(ni){ni.value=v;ni.focus();}},30); }
+  if (a === 'ai-yes')   { upd({ aiConfirm: { ...state.aiConfirm, confirmed: state.aiConfirm.suggested } }); handleSave(); }
+  if (a === 'ai-no')    { upd({ aiConfirm: { ...state.aiConfirm, confirmed: state.aiConfirm.typed } }); handleSave(); }
 });
 
 app.addEventListener('input', e => {
   if (e.target.id === 'ninp') {
-    state.form.name = e.target.value;
+    const val = e.target.value;
+    state.form.name = val;
+    state.acSuggestions = getAcSuggestions(val);
+    state.aiConfirm = null;
+    // Faqat suggestion dropdownni yangilash (to'liq render emas)
+    const drop = $id('ac-drop');
+    if (drop) {
+      if (state.acSuggestions.length) {
+        drop.innerHTML = state.acSuggestions.map(s =>
+          `<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`
+        ).join('');
+        drop.style.display = 'block';
+      } else {
+        drop.style.display = 'none';
+      }
+    }
   }
   if (e.target.id === 'pinp') {
     const v = e.target.value.replace(/[^0-9]/g, '');
@@ -428,6 +532,7 @@ function render() {
 
   // ===== ADD / EDIT =====
   if (tab === 'add') {
+    const { aiChecking, aiConfirm, acSuggestions } = state;
     h += `
     <div class="fhd">
       <h2>${editItem ? 'Tahrirlash' : 'Yangi mahsulot'}</h2>
@@ -435,8 +540,30 @@ function render() {
     </div>
     <div class="fg">
       <label class="fl-lbl">Mahsulot nomi *</label>
-      <input id="ninp" type="text" value="${esc(form.name)}" placeholder="Sut, Shampun, Limon...">
-    </div>
+      <div class="ac-wrap">
+        <input id="ninp" type="text" value="${esc(form.name)}" placeholder="Sut, Shampun, Limon..." autocomplete="off">
+        <div id="ac-drop" class="ac-drop" style="display:${acSuggestions.length ? 'block' : 'none'}">
+          ${acSuggestions.map(s => `<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+    // AI tekshiruv holati
+    if (aiChecking) {
+      h += `<div class="ai-loading"><i class="ti ti-refresh" style="animation:spin 1s linear infinite;font-size:15px"></i>AI tekshiryapti...</div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
+    }
+    if (aiConfirm && !aiConfirm.confirmed) {
+      h += `<div class="ai-check">
+        <div class="ai-check-q">🤔 "${esc(aiConfirm.typed)}" — bu <b>"${esc(aiConfirm.suggested)}"</b> emasmi?</div>
+        <div class="ai-check-acts">
+          <button class="ai-yes" data-a="ai-yes">"${esc(aiConfirm.suggested)}" sifatida saqlash</button>
+          <button class="ai-no" data-a="ai-no">Yo'q, yangi mahsulot</button>
+        </div>
+      </div>`;
+    }
+
+    h += `
     <div class="fg">
       <label class="fl-lbl">Kategoriya</label>
       <div class="cg">
@@ -455,9 +582,9 @@ function render() {
           .map(x => `<button class="sbtn${form.status===x.k?' on':''}" data-a="st" data-v="${x.k}"><i class="ti ${x.i}"></i>${x.l}</button>`).join('')}
       </div>
     </div>
-    <button class="sv-btn" data-a="save">
+    <button class="sv-btn" data-a="save" ${aiChecking ? 'disabled style="opacity:.5"' : ''}>
       <i class="ti ${editItem ? 'ti-check' : 'ti-plus'}" style="font-size:15px"></i>
-      ${editItem ? 'Saqlash' : 'Qo&#39;shish'}
+      ${aiChecking ? 'Tekshirilmoqda...' : editItem ? 'Saqlash' : 'Qo&#39;shish'}
     </button>`;
   }
 
