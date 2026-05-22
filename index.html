@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="uz" data-v="3">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -201,7 +201,10 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "184996111777",
   appId:             "1:184996111777:web:109dd2394efd370bfcd7e0"
 };
-const CLAUDE_API_KEY = "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";
+// API key localStorage da saqlanadi — kodda ko'rinmaydi
+function getApiKey(){ return localStorage.getItem('claude_api_key')||''; }
+function setApiKey(k){ localStorage.setItem('claude_api_key',k.trim()); }
+const CLAUDE_API_KEY = 'USE_GETTER'; // placeholder
 // ================================================
 
 const CATS = {
@@ -226,6 +229,7 @@ let state = {
   form:{ name:'', category:'food', price:'', status:'need_to_buy' },
   flash:null, synced:false, loaded:!CONFIGURED,
   acSuggestions:[], aiChecking:false, aiConfirm:null,
+  showKeySetup:!localStorage.getItem('claude_api_key'), keyInput:'',
   aiAnalysis:null, aiAnalysisLoading:false,
   scanLoading:false, scanItems:null, scanSelected:[],
   smartNotifs:[],
@@ -373,14 +377,14 @@ function getBudgetStatus(){
 
 // ---- AI NORMALIZE ----
 async function aiNormalize(typedName){
-  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY') return null;
+  if(!getApiKey()) return null;
   const existingNames=[...new Set(state.items.map(i=>i.name))];
   if(!existingNames.length) return null;
   if(existingNames.some(n=>n.toLowerCase()===typedName.toLowerCase())) return null;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',max_tokens:30,
         messages:[{role:'user',content:`"${typedName}" so'zi quyidagi ro'yxatdagi qaysi biri bilan bir xil mahsulot? (imlo xatosi, dialekt, boshqa til bo'lishi mumkin): ${existingNames.map(n=>`"${n}"`).join(', ')}. Faqat o'sha mahsulot nomini yoz, yoki "null" yoz.`}]
@@ -395,7 +399,7 @@ async function aiNormalize(typedName){
 
 // ---- AI ANALYZE ----
 async function aiAnalyze(){
-  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY'){ notify("Claude API key sozlanmagan",'err'); return; }
+  if(!getApiKey()){ notify("Claude API key sozlanmagan",'err'); return; }
   upd({aiAnalysisLoading:true,aiAnalysis:null});
   const bought=state.items.filter(i=>i.status==='bought');
   if(bought.length<5){ upd({aiAnalysisLoading:false,aiAnalysis:"Hali yetarli ma'lumot yo'q. Kamida 5 ta mahsulot sotib olinsin."}); return; }
@@ -408,7 +412,7 @@ async function aiAnalyze(){
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',max_tokens:600,
         messages:[{role:'user',content:`Quyidagi uy xarajatlari ma'lumotlari asosida o'zbek tilida qisqa va amaliy tavsiya ber:
@@ -432,13 +436,13 @@ Oylik byudjet: ${summary.budget?fmtP(summary.budget):'belgilanmagan'}
 
 // ---- RECEIPT SCAN ----
 async function scanReceipt(base64,mediaType){
-  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY'){notify("Claude API key sozlanmagan",'err');return;}
+  if(!getApiKey()){notify("Claude API key sozlanmagan",'err');return;}
   upd({scanLoading:true,scanItems:null,scanSelected:[]});
   try{
     const today=new Date().toISOString().slice(0,10);
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',max_tokens:1000,
         messages:[{role:'user',content:[
@@ -458,21 +462,32 @@ Faqat JSON array qaytar, boshqa hech narsa yozma:
       })
     });
     const data=await res.json();
-    const text=data.content?.[0]?.text?.trim();
-    const clean=text.replace(/```json|```|\n/g,'').trim();
-    let parsed;
-    try{ parsed=JSON.parse(clean); }
-    catch(e){
-      // Try extracting JSON array from text
-      const match=clean.match(/\[.*\]/s);
-      parsed=match?JSON.parse(match[0]):[];
+    if(data.error){ notify('AI xatosi: '+data.error.message,'err'); upd({scanLoading:false}); return; }
+    const text=data.content?.[0]?.text?.trim()||'';
+    let parsed=[];
+    // Try multiple JSON extraction strategies
+    try{
+      const clean=text.replace(/```json|```/g,'').trim();
+      parsed=JSON.parse(clean);
+    }catch(e1){
+      try{
+        const match=text.match(/\[\s*\{[\s\S]*?\}\s*\]/);
+        if(match) parsed=JSON.parse(match[0]);
+      }catch(e2){
+        // Fallback: extract lines as plain text items
+        const lines=text.split('\n').filter(l=>l.trim()&&!l.includes('{')&&!l.includes('['));
+        if(lines.length){ parsed=lines.slice(0,10).map(l=>({name:l.replace(/^[-*•\d.]+\s*/,'').trim(),price:null,currency:'UZS',date:today})); }
+      }
     }
-    const items=Array.isArray(parsed)?parsed.filter(i=>i&&i.name).map(i=>({
-      name:String(i.name||'').trim(),
-      price:i.price!=null?Number(i.price):null,
-      currency:i.currency||'UZS',
-      date:i.date&&i.date.match(/\d{4}-\d{2}-\d{2}/)?i.date:today
-    })):[];
+    const items=Array.isArray(parsed)?parsed.filter(i=>i&&(i.name||typeof i==='string')).map(i=>
+      typeof i==='string'?{name:i.trim(),price:null,currency:'UZS',date:today}:({
+        name:String(i.name||'').trim(),
+        price:i.price!=null&&i.price!==''?Number(i.price):null,
+        currency:i.currency||'UZS',
+        date:i.date&&/\d{4}-\d{2}-\d{2}/.test(i.date)?i.date:today
+      })
+    ).filter(i=>i.name.length>1):[];
+    if(!items.length){ notify("Mahsulot topilmadi. Rasmni aniqroq qiling",'err'); upd({scanLoading:false}); return; }
     upd({scanItems:items,scanSelected:items.map((_,i)=>i),scanLoading:false});
   }catch(e){
     notify("Chekni o'qib bo'lmadi. Boshqa rasm sinab ko'ring",'err');
@@ -528,7 +543,7 @@ async function trySave(){
   const{form,editItem,aiChecking}=state;
   if(!form.name.trim()){notify("Nom kiriting!",'err');return;}
   if(aiChecking) return;
-  if(!editItem&&CLAUDE_API_KEY!=='YOUR_CLAUDE_API_KEY'){
+  if(!editItem&&getApiKey()){
     upd({aiChecking:true,acSuggestions:[]});
     const match=await aiNormalize(form.name.trim());
     upd({aiChecking:false});
@@ -566,6 +581,11 @@ function saveBudget(){
 }
 
 // ---- EVENTS ----
+// Key setup
+app.addEventListener('input',e=>{
+  if(e.target.id==='key-inp'){ state.keyInput=e.target.value; }
+});
+
 app.addEventListener('click',e=>{
   const t=e.target.closest('[data-a]'); if(!t) return;
   const a=t.dataset.a,v=t.dataset.v;
@@ -595,6 +615,14 @@ app.addEventListener('click',e=>{
   if(a==='budget-edit') upd({showBudgetEdit:true,budgetInput:state.settings.budget?String(state.settings.budget):''});
   if(a==='budget-save') saveBudget();
   if(a==='budget-clear'){ const ns={...state.settings,budget:null};persist(state.items,ns);upd({showBudgetEdit:false}); }
+  if(a==='key-save'){
+    const k=state.keyInput.trim();
+    if(!k||!k.startsWith('sk-')){notify("Noto'g'ri key format. sk- bilan boshlanishi kerak",'err');return;}
+    setApiKey(k); upd({showKeySetup:false,keyInput:''});
+    notify('API key saqlandi ✅');
+  }
+  if(a==='key-show'){ upd({showKeySetup:true,keyInput:''}); }
+  if(a==='key-cancel'){ upd({showKeySetup:false,keyInput:''}); }
 });
 
 app.addEventListener('input',e=>{
@@ -610,14 +638,24 @@ app.addEventListener('input',e=>{
 
 function handleImageFile(file){
   if(!file) return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const base64=ev.target.result.split(',')[1];
-    const mediaType=file.type||'image/jpeg';
-    upd({tab:'ai'});
-    scanReceipt(base64,mediaType);
+  upd({tab:'ai',scanLoading:true,scanItems:null,scanSelected:[]});
+  // Compress image before sending
+  const img=new Image();
+  const objUrl=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(objUrl);
+    const MAX=1200;
+    let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){ if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;} }
+    const canvas=document.createElement('canvas');
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(img,0,0,w,h);
+    const base64=canvas.toDataURL('image/jpeg',0.85).split(',')[1];
+    scanReceipt(base64,'image/jpeg');
   };
-  reader.readAsDataURL(file);
+  img.onerror=()=>{ notify("Rasmni o'qib bo'lmadi",'err'); upd({scanLoading:false}); };
+  img.src=objUrl;
 }
 $id('cam-inp').addEventListener('change',e=>{handleImageFile(e.target.files[0]);e.target.value='';});
 $id('gal-inp').addEventListener('change',e=>{handleImageFile(e.target.files[0]);e.target.value='';});
@@ -837,6 +875,25 @@ function render(){
 
   // ===== AI =====
   if(tab==='ai'){
+    // Key setup banner
+    if(state.showKeySetup||!getApiKey()){
+      h+=`<div class="ai-section" style="border-color:var(--am-b);background:var(--am-bg)">
+        <h3 style="color:var(--am-t)"><i class="ti ti-key" style="font-size:15px"></i>Claude API Key kiriting</h3>
+        <p style="font-size:13px;color:var(--am-t)">
+          <a href="https://console.anthropic.com" target="_blank" style="color:var(--bl-t)">console.anthropic.com</a>
+          → API Keys → Create Key → nusxalang
+        </p>
+        <input id="key-inp" type="password" placeholder="sk-ant-api03-..." value="${esc(state.keyInput)}" style="font-size:14px">
+        <div style="display:flex;gap:8px">
+          <button class="ai-action-btn" style="flex:1;background:var(--am-t);color:#fff;border-color:var(--am-t)" data-a="key-save">Saqlash</button>
+          ${getApiKey()?`<button class="ai-action-btn" style="flex:0;padding:11px 14px" data-a="key-cancel">Bekor</button>`:''}
+        </div>
+        <p style="font-size:11px;color:var(--am-t)">🔒 Key faqat telefonda saqlanadi — hech yerga yuborilmaydi</p>
+      </div>`;
+    } else {
+      h+=`<div style="text-align:right;margin-bottom:-4px"><button style="font-size:11px;color:var(--muted);background:none;border:none;padding:4px 0" data-a="key-show"><i class="ti ti-key" style="font-size:11px"></i> API keyni yangilash</button></div>`;
+    }
+
     // Analysis
     h+=`<div class="ai-section">
       <h3><i class="ti ti-chart-dots" style="font-size:15px"></i>Xarajat tahlili</h3>
