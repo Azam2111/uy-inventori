@@ -270,7 +270,7 @@ const curYM=()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getM
 const mLbl=s=>{ const[y,m]=s.split('-'); return `${MONTHS[+m-1]} ${y}`; };
 function fmtP(p, currency) {
   if (p == null || p === '') return null;
-  const cur = currency || 'UZS';
+  const cur = currency || (state && state.settings && state.settings.defaultCurrency) || 'EGP';
   const symbols = { UZS: "so'm", EGP: 'EGP', USD: '$', EUR: '€', AED: 'AED', RUB: '₽' };
   const sym = symbols[cur] || cur;
   if (cur === 'USD') return '$' + Number(p).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
@@ -427,6 +427,32 @@ async function aiNormalize(typedName){
     if(!answer||answer==='null') return null;
     return existingNames.find(n=>n.toLowerCase()===answer.toLowerCase())||null;
   }catch(e){return null;}
+}
+
+// ---- AI BATCH RENAME ----
+async function aiBatchRename(){
+  if(!getApiKey()){notify("API key yo'q",'err');return;}
+  const toRename=state.items.filter(i=>i.name&&i.name.length>12);
+  if(!toRename.length){notify("Qisqartiriladigan nom yo'q",'info');return;}
+  upd({aiAnalysisLoading:true});
+  try{
+    const names=[...new Set(toRename.map(i=>i.name))];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:1000,
+        messages:[{role:'user',content:'Bu mahsulot nomlarini qisqa umumiy o\'zbek nomiga o\'zgartir (1-3 so\'z):\nPishloq turlari→"Pishloq", Sut turlari→"Sut", Tovuq→"Tovuq go\'shti", Go\'sht→"Go\'sht", Sharbat→"Sharbat", Gazli ichimlik→"Gazli suv", Chips→"Chips"\nBoshqalar→qisqa o\'zbek nomi.\nFaqat JSON object: {"asl nom":"yangi nom"}\n\nNomlar: '+JSON.stringify(names)}]
+      })
+    });
+    const data=await res.json();
+    const text=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
+    const mapping=JSON.parse(text);
+    const updated=state.items.map(i=>mapping[i.name]?{...i,name:mapping[i.name]}:i);
+    persist(updated);
+    notify(Object.keys(mapping).length+' ta nom qisqartirildi');
+  }catch(e){notify("Xato: "+e.message,'err');}
+  upd({aiAnalysisLoading:false});
 }
 
 // ---- AI ANALYZE ----
@@ -665,6 +691,8 @@ app.addEventListener('click',e=>{
   }
   if(a==='key-show'){ upd({showKeySetup:true,keyInput:''}); }
   if(a==='key-cancel'){ upd({showKeySetup:false,keyInput:''}); }
+  if(a==='set-currency'){ const ns={...state.settings,defaultCurrency:v}; persist(state.items,ns); notify(`Valyuta ${v} ga o'rnatildi`); }
+  if(a==='ai-rename'){ aiBatchRename(); }
 });
 
 app.addEventListener('input',e=>{
@@ -930,7 +958,17 @@ function render(){
 
   // ===== AI =====
   if(tab==='ai'){
-    // Key setup banner
+    // Default currency setting
+    const defCur = state.settings.defaultCurrency || 'EGP';
+    h+=`<div class="ai-section">
+      <h3><i class="ti ti-coin" style="font-size:15px"></i>Asosiy valyuta</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:8px">Narxlar qaysi valyutada kiritiladi?</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${['UZS','EGP','USD','EUR','AED'].map(c=>`<button style="padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;border:${defCur===c?'2px solid var(--text)':'1px solid var(--bd)'};background:${defCur===c?'var(--surface)':'none'};color:${defCur===c?'var(--text)':'var(--muted)'}" data-a="set-currency" data-v="${c}">${c}</button>`).join('')}
+      </div>
+    </div>`;
+
+        // Key setup banner
     if(state.showKeySetup||!getApiKey()){
       h+=`<div class="ai-section" style="border-color:var(--am-b);background:var(--am-bg)">
         <h3 style="color:var(--am-t)"><i class="ti ti-key" style="font-size:15px"></i>Claude API Key kiriting</h3>
@@ -955,6 +993,7 @@ function render(){
       <button class="ai-action-btn" data-a="ai-analyze" ${aiAnalysisLoading?'disabled':''}>
         ${aiAnalysisLoading?`<i class="ti ti-refresh spin" style="font-size:15px"></i>Tahlil qilinmoqda...`:`<i class="ti ti-brain" style="font-size:15px"></i>AI tahlil qilsin`}
       </button>
+      <button class="ai-action-btn" data-a="ai-rename" ${aiAnalysisLoading?'disabled':''}><i class="ti ti-text-size" style="font-size:15px"></i>Uzun nomlarni qisqartirish</button>
       ${aiAnalysis?`<div class="ai-result">${esc(aiAnalysis)}</div>`:''}
     </div>`;
 
