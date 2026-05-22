@@ -440,21 +440,39 @@ async function scanReceipt(base64,mediaType){
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',max_tokens:800,
+        model:'claude-haiku-4-5-20251001',max_tokens:1000,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-          {type:'text',text:`Bu chek yoki xarid rasmi. Har bir mahsulot uchun ajrat: nom (o'zbek tilida), narx (faqat raqam so'mda, yo'q bo'lsa null), sana (YYYY-MM-DD, ko'rinmasa ${today}). Faqat JSON qaytarb: [{"name":"Sut","price":12000,"date":"${today}"}]. Boshqa hech narsa yozma.`}
+          {type:'text',text:`Bu rasm chek, buyurtma yoki xarid ro'yxati. Quyidagilarni ajrat:
+
+1. Faqat MAHSULOTLAR (delivery fee, service fee, tax, subtotal, total — BULARNI OLMA)
+2. Har bir mahsulot uchun:
+   - name: o'zbek tiliga tarjima qil, qisqa va aniq (masalan "Tovuq fileto 1kg", "Chips limon")
+   - price: faqat mahsulot narxi, raqam (har qanday valyuta bo'lsa ham, asl raqamni yoz), yo'q bo'lsa null
+   - currency: valyuta kodi (UZS, EGP, USD, AED va h.k.)
+   - date: rasmda ko'ringan sana YYYY-MM-DD formatda, ko'rinmasa "${today}"
+
+Faqat JSON array qaytar, boshqa hech narsa yozma:
+[{"name":"Tovuq fileto 1kg","price":274.95,"currency":"EGP","date":"${today}"}]`}
         ]}]
       })
     });
     const data=await res.json();
     const text=data.content?.[0]?.text?.trim();
-    const clean=text.replace(/```json|```/g,'').trim();
-    const parsed=JSON.parse(clean);
-    const items=Array.isArray(parsed)?parsed.map(i=>
-      typeof i==='string'?{name:i,price:null,date:today}:
-      {name:i.name||i,price:i.price||null,date:i.date||today}
-    ):[];
+    const clean=text.replace(/```json|```|\n/g,'').trim();
+    let parsed;
+    try{ parsed=JSON.parse(clean); }
+    catch(e){
+      // Try extracting JSON array from text
+      const match=clean.match(/\[.*\]/s);
+      parsed=match?JSON.parse(match[0]):[];
+    }
+    const items=Array.isArray(parsed)?parsed.filter(i=>i&&i.name).map(i=>({
+      name:String(i.name||'').trim(),
+      price:i.price!=null?Number(i.price):null,
+      currency:i.currency||'UZS',
+      date:i.date&&i.date.match(/\d{4}-\d{2}-\d{2}/)?i.date:today
+    })):[];
     upd({scanItems:items,scanSelected:items.map((_,i)=>i),scanLoading:false});
   }catch(e){
     notify("Chekni o'qib bo'lmadi. Boshqa rasm sinab ko'ring",'err');
@@ -524,14 +542,17 @@ function addScanItems(){
   if(!scanItems) return;
   const toAdd=scanSelected.map(i=>scanItems[i]).filter(Boolean);
   const newItems=toAdd.map(item=>{
-    const purchaseDate=new Date(item.date+'T12:00:00').toISOString();
-    const m=item.date?item.date.slice(0,7):curYM();
-    return {id:uid(),name:item.name,category:'food',price:item.price||null,
+    const purchaseDate=new Date((item.date||new Date().toISOString().slice(0,10))+'T12:00:00').toISOString();
+    const m=(item.date||curYM()).slice(0,7);
+    const cur=item.currency&&item.currency!=='UZS'?` (${item.currency})`:'';
+    return {id:uid(),name:item.name,category:'food',
+      price:item.price!=null?item.price:null,
+      currency:item.currency||'UZS',
       status:'bought',dateAdded:purchaseDate,purchaseDate,month:m};
   });
   persist([...newItems,...state.items]);
-  const withPrice=toAdd.filter(i=>i.price).length;
-  notify(`${toAdd.length} ta mahsulot "Olindi" sifatida kiritildi${withPrice?' (narxlar bilan)':''}`);
+  const withPrice=toAdd.filter(i=>i.price!=null).length;
+  notify(`${toAdd.length} ta mahsulot kiritildi${withPrice?' · '+withPrice+' ta narx bilan':''}`);
   upd({scanItems:null,scanSelected:[],tab:'list'});
 }
 
@@ -847,7 +868,7 @@ function render(){
           <div style="flex:1;min-width:0">
             <div class="scan-name">${esc(item.name)}</div>
             <div style="font-size:11px;color:var(--muted);margin-top:1px">
-              ${item.price?`<b>${item.price.toLocaleString('ru-RU')} so'm</b> &middot; `:''}${item.date||''}
+              ${item.price!=null?`<b>${item.price.toLocaleString('ru-RU')} ${item.currency||'UZS'}</b> &middot; `:''}${item.date||''}
             </div>
           </div>
         </div>`).join('')}
