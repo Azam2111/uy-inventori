@@ -186,6 +186,7 @@ code{background:var(--surface);border:1px solid var(--bd);padding:2px 5px;border
 <body>
 <div id="app"></div>
 <input type="file" id="cam-inp" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="gal-inp" accept="image/*" style="display:none">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -434,22 +435,27 @@ async function scanReceipt(base64,mediaType){
   if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY'){notify("Claude API key sozlanmagan",'err');return;}
   upd({scanLoading:true,scanItems:null,scanSelected:[]});
   try{
+    const today=new Date().toISOString().slice(0,10);
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
-        model:'claude-haiku-4-5-20251001',max_tokens:400,
+        model:'claude-haiku-4-5-20251001',max_tokens:800,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-          {type:'text',text:'Bu chek/kassa yoki xarid ro\'yxati rasmidan mahsulot nomlarini ajrat. O\'zbek tiliga tarjima qil. Faqat JSON array: ["Mahsulot1","Mahsulot2"]. Boshqa hech narsa yozma.'}
+          {type:'text',text:`Bu chek yoki xarid rasmi. Har bir mahsulot uchun ajrat: nom (o'zbek tilida), narx (faqat raqam so'mda, yo'q bo'lsa null), sana (YYYY-MM-DD, ko'rinmasa ${today}). Faqat JSON qaytarb: [{"name":"Sut","price":12000,"date":"${today}"}]. Boshqa hech narsa yozma.`}
         ]}]
       })
     });
     const data=await res.json();
     const text=data.content?.[0]?.text?.trim();
     const clean=text.replace(/```json|```/g,'').trim();
-    const items=JSON.parse(clean);
-    upd({scanItems:Array.isArray(items)?items:[],scanSelected:Array.isArray(items)?items.map((_,i)=>i):[],scanLoading:false});
+    const parsed=JSON.parse(clean);
+    const items=Array.isArray(parsed)?parsed.map(i=>
+      typeof i==='string'?{name:i,price:null,date:today}:
+      {name:i.name||i,price:i.price||null,date:i.date||today}
+    ):[];
+    upd({scanItems:items,scanSelected:items.map((_,i)=>i),scanLoading:false});
   }catch(e){
     notify("Chekni o'qib bo'lmadi. Boshqa rasm sinab ko'ring",'err');
     upd({scanLoading:false});
@@ -517,11 +523,15 @@ function addScanItems(){
   const{scanItems,scanSelected}=state;
   if(!scanItems) return;
   const toAdd=scanSelected.map(i=>scanItems[i]).filter(Boolean);
-  const now=new Date().toISOString();
-  const newItems=toAdd.map(name=>({id:uid(),name,category:'food',price:null,
-    status:'need_to_buy',dateAdded:now,purchaseDate:null,month:curYM()}));
+  const newItems=toAdd.map(item=>{
+    const purchaseDate=new Date(item.date+'T12:00:00').toISOString();
+    const m=item.date?item.date.slice(0,7):curYM();
+    return {id:uid(),name:item.name,category:'food',price:item.price||null,
+      status:'bought',dateAdded:purchaseDate,purchaseDate,month:m};
+  });
   persist([...newItems,...state.items]);
-  notify(`${toAdd.length} ta mahsulot qo'shildi`);
+  const withPrice=toAdd.filter(i=>i.price).length;
+  notify(`${toAdd.length} ta mahsulot "Olindi" sifatida kiritildi${withPrice?' (narxlar bilan)':''}`);
   upd({scanItems:null,scanSelected:[],tab:'list'});
 }
 
@@ -557,7 +567,8 @@ app.addEventListener('click',e=>{
   if(a==='notif-add') notifQuickAdd(v);
   if(a==='notif-perm') requestNotifPerm();
   if(a==='ai-analyze') aiAnalyze();
-  if(a==='scan-open') $id('cam-inp').click();
+  if(a==='scan-camera') $id('cam-inp').click();
+  if(a==='scan-gallery') $id('gal-inp').click();
   if(a==='scan-toggle'){ const i=+v,sel=[...state.scanSelected]; sel.includes(i)?sel.splice(sel.indexOf(i),1):sel.push(i); upd({scanSelected:sel}); }
   if(a==='scan-add')  addScanItems();
   if(a==='budget-edit') upd({showBudgetEdit:true,budgetInput:state.settings.budget?String(state.settings.budget):''});
@@ -576,8 +587,8 @@ app.addEventListener('input',e=>{
   if(e.target.id==='binp'){ state.budgetInput=e.target.value.replace(/[^0-9]/g,''); e.target.value=state.budgetInput; }
 });
 
-$id('cam-inp').addEventListener('change',async e=>{
-  const file=e.target.files[0]; if(!file) return;
+function handleImageFile(file){
+  if(!file) return;
   const reader=new FileReader();
   reader.onload=ev=>{
     const base64=ev.target.result.split(',')[1];
@@ -586,8 +597,9 @@ $id('cam-inp').addEventListener('change',async e=>{
     scanReceipt(base64,mediaType);
   };
   reader.readAsDataURL(file);
-  e.target.value='';
-});
+}
+$id('cam-inp').addEventListener('change',e=>{handleImageFile(e.target.files[0]);e.target.value='';});
+$id('gal-inp').addEventListener('change',e=>{handleImageFile(e.target.files[0]);e.target.value='';});
 
 // ---- RENDER ----
 function render(){
@@ -817,19 +829,32 @@ function render(){
     h+=`<div class="ai-section">
       <h3><i class="ti ti-scan" style="font-size:15px"></i>Chek skaneri</h3>
       <p style="font-size:13px;color:var(--muted)">Kassa cheki yoki xarid ro&#39;yxati rasmini oling — AI mahsulotlarni ajratib beradi</p>
-      <button class="ai-action-btn" data-a="scan-open" ${scanLoading?'disabled':''}>
-        ${scanLoading?`<i class="ti ti-refresh spin" style="font-size:15px"></i>O&#39;qilmoqda...`:`<i class="ti ti-camera" style="font-size:15px"></i>Rasm olish / yuklash`}
-      </button>`;
+      ${scanLoading?
+        `<div class="ai-action-btn"><i class="ti ti-refresh spin" style="font-size:15px"></i>O&#39;qilmoqda...</div>`:
+        `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button class="ai-action-btn" data-a="scan-camera"><i class="ti ti-camera" style="font-size:15px"></i>Kamera</button>
+          <button class="ai-action-btn" data-a="scan-gallery"><i class="ti ti-photo" style="font-size:15px"></i>Galereya</button>
+        </div>`
+      }`;
     if(scanItems){
+      const totalPrice=scanSelected.reduce((s,i)=>s+(scanItems[i]?.price||0),0);
       h+=`<div class="scan-results">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Qo&#39;shmoqchi bo&#39;lganlaringizni tanlang:</div>
-        ${scanItems.map((name,i)=>`<div class="scan-item">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">"Olindi" sifatida kiritiladi — tanlang:</div>
+        ${scanItems.map((item,i)=>`<div class="scan-item">
           <div class="scan-check${scanSelected.includes(i)?' on':''}" data-a="scan-toggle" data-v="${i}">
             ${scanSelected.includes(i)?'<i class="ti ti-check" style="font-size:12px;color:#fff"></i>':''}
           </div>
-          <span class="scan-name">${esc(name)}</span>
+          <div style="flex:1;min-width:0">
+            <div class="scan-name">${esc(item.name)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:1px">
+              ${item.price?`<b>${item.price.toLocaleString('ru-RU')} so'm</b> &middot; `:''}${item.date||''}
+            </div>
+          </div>
         </div>`).join('')}
-        ${scanSelected.length?`<button class="scan-add-btn" data-a="scan-add"><i class="ti ti-plus" style="font-size:15px"></i>${scanSelected.length} ta mahsulot ro&#39;yxatga qo&#39;shish</button>`:''}
+        ${scanSelected.length?`<button class="scan-add-btn" data-a="scan-add">
+          <i class="ti ti-circle-check" style="font-size:15px"></i>
+          ${scanSelected.length} ta qo&#39;shish${totalPrice?' &middot; '+totalPrice.toLocaleString('ru-RU')+' so\'m':''}
+        </button>`:''}
       </div>`;
     }
     h+=`</div>`;
