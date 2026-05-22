@@ -17,6 +17,7 @@
   --rd-bg:#fef2f2;--rd-t:#dc2626;--rd-b:#fecaca;
   --am-bg:#fffbeb;--am-t:#d97706;--am-b:#fde68a;
   --gn-bg:#f0fdf4;--gn-t:#16a34a;--gn-b:#bbf7d0;
+  --bl-bg:#eff6ff;--bl-t:#2563eb;--bl-b:#bfdbfe;
   --r:12px;--rs:8px;
 }
 @media(prefers-color-scheme:dark){:root{
@@ -24,33 +25,42 @@
   --rd-bg:#450a0a;--rd-t:#f87171;--rd-b:#7f1d1d;
   --am-bg:#451a03;--am-t:#fbbf24;--am-b:#78350f;
   --gn-bg:#052e16;--gn-t:#4ade80;--gn-b:#14532d;
+  --bl-bg:#1e3a5f;--bl-t:#60a5fa;--bl-b:#1e40af;
 }}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,16px)}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
 button{cursor:pointer;font-family:inherit}
-input[type=text]{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rs);padding:11px 14px;width:100%;font-size:16px;color:var(--text);font-family:inherit;outline:none;transition:.15s;-webkit-appearance:none}
-input[type=text]:focus{border-color:var(--muted)}
+input[type=text],input[type=number]{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rs);padding:11px 14px;width:100%;font-size:16px;color:var(--text);font-family:inherit;outline:none;transition:.15s;-webkit-appearance:none}
+input:focus{border-color:var(--muted)}
 #app{max-width:430px;margin:0 auto;min-height:100vh}
-.hdr{padding:16px 16px 0;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:10}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+/* HEADER */
+.hdr{padding:14px 16px 0;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:20}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .hdr-title{font-size:16px;font-weight:500;display:flex;align-items:center;gap:6px}
 .hdr-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .hdr-sub.sync{color:var(--gn-t)}
 .add-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;color:var(--text);background:var(--surface)}
-.tabs{display:flex}
-.tb{padding:8px 16px;font-size:13px;border-bottom:2px solid transparent;color:var(--muted);font-weight:400;cursor:pointer;display:flex;align-items:center;gap:5px;border-radius:0;background:none;border-top:none;border-left:none;border-right:none;transition:.15s}
+/* TABS */
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tb{flex-shrink:0;padding:8px 14px;font-size:13px;border-bottom:2px solid transparent;color:var(--muted);font-weight:400;cursor:pointer;display:flex;align-items:center;gap:5px;border-radius:0;background:none;border-top:none;border-left:none;border-right:none;position:relative;white-space:nowrap}
 .tb.on{color:var(--text);font-weight:500;border-bottom-color:var(--text)}
+.tb-badge{position:absolute;top:4px;right:6px;background:var(--rd-t);color:#fff;font-size:9px;font-weight:700;border-radius:10px;padding:1px 5px;min-width:16px;text-align:center}
+/* CONTENT */
 .cnt{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+/* CHIPS */
 .chips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.chip{padding:10px 6px;border-radius:var(--rs);text-align:center;border:1px solid var(--bd);background:var(--surface);cursor:pointer;transition:.15s}
+.chip{padding:10px 6px;border-radius:var(--rs);text-align:center;border:1px solid var(--bd);background:var(--surface);cursor:pointer}
 .chip .cv{font-size:22px;font-weight:500;color:var(--text)}
 .chip .cl{font-size:11px;color:var(--muted);margin-top:2px}
 .chip.rd{border-color:var(--rd-b);background:var(--rd-bg)}.chip.rd .cv{color:var(--rd-t)}.chip.rd .cl{color:var(--rd-t)}
 .chip.am{border-color:var(--am-b);background:var(--am-bg)}.chip.am .cv{color:var(--am-t)}.chip.am .cl{color:var(--am-t)}
 .chip.gn{border-color:var(--gn-b);background:var(--gn-bg)}.chip.gn .cv{color:var(--gn-t)}.chip.gn .cl{color:var(--gn-t)}
+/* PILLS */
 .pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .pills::-webkit-scrollbar{display:none}
 .pill{white-space:nowrap;padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--bd);color:var(--muted);cursor:pointer;background:none}
 .pill.on{border-color:var(--text);color:var(--text);font-weight:500;background:var(--surface)}
+/* ITEMS */
 .items{display:flex;flex-direction:column;gap:8px}
 .ic{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
 .ic.open{border-color:var(--muted)}
@@ -67,16 +77,21 @@ input[type=text]:focus{border-color:var(--muted)}
 .bdg.gn{background:var(--gn-bg);color:var(--gn-t);border:1px solid var(--gn-b)}
 .nbtn{font-size:11px;padding:4px 9px;border-radius:6px;border:1px solid var(--bd);background:var(--surface);color:var(--text);font-weight:500;display:flex;align-items:center;gap:4px}
 .exp{border-top:1px solid var(--bd);padding:11px 13px;background:var(--surface)}
-.edates{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.edates{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-bottom:8px;flex-wrap:wrap}
 .eacts{display:flex;gap:7px}
 .ab{flex:1;padding:7px;border-radius:var(--rs);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid var(--bd);background:var(--card);color:var(--text)}
 .ab.am-s{border-color:var(--am-b);background:var(--am-bg);color:var(--am-t)}
 .ab.rd-s{border-color:var(--rd-b);background:var(--rd-bg);color:var(--rd-t);flex:0;padding:7px 11px}
+.cycle-info{font-size:11px;color:var(--bl-t);background:var(--bl-bg);border:1px solid var(--bl-b);border-radius:6px;padding:5px 9px;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+/* EMPTY */
 .empty{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty i{font-size:34px;display:block;margin-bottom:10px}
+/* FLASH */
 .fl{padding:10px 14px;border-radius:var(--rs);font-size:13px;font-weight:500}
 .fl.ok{background:var(--gn-bg);color:var(--gn-t);border:1px solid var(--gn-b)}
 .fl.err{background:var(--rd-bg);color:var(--rd-t);border:1px solid var(--rd-b)}
+.fl.info{background:var(--bl-bg);color:var(--bl-t);border:1px solid var(--bl-b)}
+/* FORM */
 .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .fl-lbl{font-size:12px;color:var(--muted)}
 .cg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
@@ -90,6 +105,20 @@ input[type=text]:focus{border-color:var(--muted)}
 .fhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .fhd h2{font-size:16px;font-weight:500}
 .xbtn{padding:4px 8px;color:var(--muted);background:none;border:none;font-size:17px;cursor:pointer}
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);margin-top:4px;z-index:100;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.ac-item{padding:10px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text)}
+.ac-item:active{background:var(--surface)}
+.ai-check{padding:12px 14px;border-radius:var(--rs);background:var(--am-bg);border:1px solid var(--am-b);color:var(--am-t);font-size:13px;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.ai-check-q{font-weight:500;font-size:14px}
+.ai-check-acts{display:flex;gap:8px}
+.ai-yes{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:var(--am-t);color:#fff;font-weight:500;font-size:13px}
+.ai-no{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:none;color:var(--am-t);font-weight:500;font-size:13px}
+.ai-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:8px 0;margin-bottom:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite}
+/* STATS */
 .sc{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sk{background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:12px}
@@ -104,32 +133,63 @@ input[type=text]:focus{border-color:var(--muted)}
 .bc{font-size:11px;color:var(--muted);margin-top:3px}
 .tpr{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .rnk{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+/* BUDGET */
+.budget-bar{height:8px;background:var(--surface);border-radius:4px;overflow:hidden;margin:10px 0 6px}
+.budget-fill{height:100%;border-radius:4px;transition:width .4s}
+.budget-edit{display:flex;gap:8px;margin-top:10px}
+.budget-edit input{flex:1}
+.budget-save{padding:0 16px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--text);color:var(--card);font-size:13px;font-weight:500}
+/* SMART NOTIFS */
+.notif-list{display:flex;flex-direction:column;gap:6px}
+.notif-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs)}
+.notif-item.urgent{border-color:var(--rd-b);background:var(--rd-bg)}
+.notif-item.warn{border-color:var(--am-b);background:var(--am-bg)}
+.notif-icon{font-size:18px;flex-shrink:0}
+.notif-text{flex:1;min-width:0}
+.notif-name{font-weight:500;font-size:14px}
+.notif-desc{font-size:11px;color:var(--muted);margin-top:1px}
+.notif-add{padding:5px 10px;border-radius:6px;border:1px solid var(--bd);background:var(--surface);font-size:12px;font-weight:500;color:var(--text);flex-shrink:0}
+/* QUICK ADD */
+.qa-section{display:flex;flex-direction:column;gap:8px}
+.qa-label{font-size:12px;color:var(--muted);font-weight:500;display:flex;align-items:center;gap:5px}
+.qa-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.qa-scroll::-webkit-scrollbar{display:none}
+.qa-btn{flex-shrink:0;padding:8px 13px;border-radius:20px;border:1px solid var(--bd);background:var(--card);font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.qa-btn i{font-size:13px;color:var(--muted)}
+/* SHOP MODE */
+.shop-items{display:flex;flex-direction:column;gap:10px}
+.shop-item{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;display:flex;align-items:center;gap:14px}
+.shop-info{flex:1;min-width:0}
+.shop-name{font-size:20px;font-weight:500}
+.shop-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.shop-done{width:52px;height:52px;border-radius:50%;border:2px solid var(--gn-b);background:var(--gn-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;color:var(--gn-t)}
+.shop-total{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+/* AI TAB */
+.ai-section{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.ai-section h3{font-size:15px;font-weight:500;display:flex;align-items:center;gap:7px}
+.ai-action-btn{padding:11px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--surface);font-size:14px;font-weight:500;color:var(--text);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.ai-result{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;background:var(--surface);border-radius:var(--rs);padding:12px;border:1px solid var(--bd)}
+.scan-results{display:flex;flex-direction:column;gap:8px}
+.scan-item{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--surface);border:1px solid var(--bd);border-radius:var(--rs)}
+.scan-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--bd);background:var(--card);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.scan-check.on{border-color:var(--gn-t);background:var(--gn-t)}
+.scan-name{flex:1;font-size:14px}
+.scan-add-btn{padding:10px;border-radius:var(--rs);border:none;background:var(--gn-t);color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px}
+/* SETUP */
 .setup{padding:20px 16px;max-width:430px;margin:0 auto}
 .step{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
 .sn{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--text);color:var(--bg);font-size:11px;font-weight:500;align-items:center;justify-content:center;flex-shrink:0}
 code{background:var(--surface);border:1px solid var(--bd);padding:2px 5px;border-radius:4px;font-size:12px}
 .sl{color:#3b82f6}
-.ac-wrap{position:relative}
-.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);margin-top:4px;z-index:100;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
-.ac-item{padding:10px 14px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text)}
-.ac-item:active{background:var(--surface)}
-.ac-item i{font-size:13px;color:var(--muted)}
-.ai-check{padding:12px 14px;border-radius:var(--rs);background:var(--am-bg);border:1px solid var(--am-b);color:var(--am-t);font-size:13px;display:flex;flex-direction:column;gap:10px}
-.ai-check-q{font-weight:500;font-size:14px}
-.ai-check-acts{display:flex;gap:8px}
-.ai-yes{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:var(--am-t);color:#fff;font-weight:500;font-size:13px}
-.ai-no{flex:1;padding:8px;border-radius:var(--rs);border:1px solid var(--am-b);background:none;color:var(--am-t);font-weight:500;font-size:13px}
-.ai-loading{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:8px 0}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<input type="file" id="cam-inp" accept="image/*" capture="environment" style="display:none">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ================================================
-//  FIREBASE CONFIG — shu yerga o'zingiznikini qo'ying
 // ================================================
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyDF9MoYhkiftBOSxcZ_4A2VVAQxx6lIzrY",
@@ -140,533 +200,720 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "184996111777",
   appId:             "1:184996111777:web:109dd2394efd370bfcd7e0"
 };
-// ================================================
-//  CLAUDE API KEY — console.anthropic.com dan oling
-// ================================================
 const CLAUDE_API_KEY = "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";
 // ================================================
 
 const CATS = {
-  food:      { l: 'Oziq-ovqat', i: 'ti-apple' },
-  hygiene:   { l: 'Gigiyena',   i: 'ti-droplet' },
-  household: { l: 'Maishiy',    i: 'ti-home' },
-  other:     { l: 'Boshqa',     i: 'ti-package' },
+  food:      { l:'Oziq-ovqat', i:'ti-apple'   },
+  hygiene:   { l:'Gigiyena',   i:'ti-droplet' },
+  household: { l:'Maishiy',    i:'ti-home'    },
+  other:     { l:'Boshqa',     i:'ti-package' },
 };
 const SC = {
-  need_to_buy: { lbl:'Kerak',   cls:'rd', nl:'Savatga', ni:'ti-shopping-cart', ns:'in_cart'  },
-  in_cart:     { lbl:'Savatda', cls:'am', nl:'Olindi',  ni:'ti-circle-check',  ns:'bought'   },
-  bought:      { lbl:'Olindi',  cls:'gn', nl:null,      ni:null,               ns:null        },
+  need_to_buy:{ lbl:'Kerak',   cls:'rd', nl:'Savatga', ni:'ti-shopping-cart', ns:'in_cart' },
+  in_cart:    { lbl:'Savatda', cls:'am', nl:'Olindi',  ni:'ti-circle-check',  ns:'bought'  },
+  bought:     { lbl:'Olindi',  cls:'gn', nl:null,      ni:null,               ns:null      },
 };
-const MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
+const MONTHS=['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
 const CONFIGURED = FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
 
-let db = null, dbRef = null;
+let db=null, dbRef=null;
 let state = {
-  items: [], tab: 'list', filter: 'all', open: null,
-  editItem: null, form: { name:'', category:'food', price:'', status:'need_to_buy' },
-  flash: null, synced: false, loaded: !CONFIGURED,
-  acSuggestions: [], aiChecking: false, aiConfirm: null,
+  items:[], settings:{ budget:null },
+  tab:'list', filter:'all', open:null,
+  editItem:null,
+  form:{ name:'', category:'food', price:'', status:'need_to_buy' },
+  flash:null, synced:false, loaded:!CONFIGURED,
+  acSuggestions:[], aiChecking:false, aiConfirm:null,
+  aiAnalysis:null, aiAnalysisLoading:false,
+  scanLoading:false, scanItems:null, scanSelected:[],
+  smartNotifs:[],
+  showBudgetEdit:false,
+  budgetInput:'',
 };
-let flashTimer = null;
-const app = document.getElementById('app');
+let flashTimer=null;
+const app=document.getElementById('app');
 
-function uid()    { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-function curYM()  { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
-function mLbl(s)  { const [y,m] = s.split('-'); return `${MONTHS[+m-1]} ${y}`; }
-function fmtP(p)  { if (p == null || p === '') return null; return Number(p).toLocaleString('ru-RU') + ' so\'m'; }
-function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function $id(id)  { return document.getElementById(id); }
-
-function upd(o, noRender) { Object.assign(state, o); if (!noRender) render(); }
-
-// ---- AUTOCOMPLETE ----
-function getAcSuggestions(val) {
-  if (!val || val.length < 2) return [];
-  const q = val.toLowerCase();
-  const names = [...new Set(state.items.map(i => i.name))];
-  return names.filter(n => n.toLowerCase().includes(q) && n.toLowerCase() !== q).slice(0, 5);
-}
-
-// ---- AI NORMALIZATSIYA ----
-async function aiNormalize(typedName) {
-  if (CLAUDE_API_KEY === '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') return null;
-  const existingNames = [...new Set(state.items.map(i => i.name))];
-  if (!existingNames.length) return null;
-  // Exact match — AI shart emas
-  if (existingNames.some(n => n.toLowerCase() === typedName.toLowerCase())) return null;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 50,
-        messages: [{
-          role: 'user',
-          content: `Foydalanuvchi "${typedName}" deb yozdi. Mavjud mahsulotlar ro'yxati: ${existingNames.map(n=>`"${n}"`).join(', ')}. 
-Agar "${typedName}" ro'yxatdagi biron mahsulot bilan bir xil narsa bo'lsa (imlo xatosi, bosh-kichik harf farqi, dialekt farqi va h.k.), faqat o'sha mahsulot nomini yoz. Agar boshqa narsa bo'lsa, faqat "null" yoz. Boshqa hech narsa yozma.`
-        }]
-      })
-    });
-    const data = await res.json();
-    const answer = data.content?.[0]?.text?.trim();
-    if (!answer || answer === 'null') return null;
-    // Javob ro'yxatda borligini tekshir
-    const match = existingNames.find(n => n.toLowerCase() === answer.toLowerCase());
-    return match || null;
-  } catch(e) {
-    return null;
-  }
-}
-
-function notify(msg, type) {
+// ---- UTILS ----
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const curYM=()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
+const mLbl=s=>{ const[y,m]=s.split('-'); return `${MONTHS[+m-1]} ${y}`; };
+const fmtP=p=>p==null||p===''?null:Number(p).toLocaleString('ru-RU')+' so\'m';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const $id=id=>document.getElementById(id);
+function upd(o,noRender){ Object.assign(state,o); if(!noRender)render(); }
+function notify(msg,type){
   clearTimeout(flashTimer);
-  upd({ flash: { msg, type: type || 'ok' } });
-  flashTimer = setTimeout(() => upd({ flash: null }), 2500);
+  upd({flash:{msg,type:type||'ok'}});
+  flashTimer=setTimeout(()=>upd({flash:null}),2800);
 }
 
 // ---- FIREBASE ----
-if (CONFIGURED) {
+if(CONFIGURED){
   firebase.initializeApp(FIREBASE_CONFIG);
-  db = firebase.database();
-  dbRef = db.ref('inventory');
-  let first = true;
-  dbRef.on('value', snap => {
-    const items = (snap.val() || {}).items || [];
-    if (first) { first = false; upd({ items, loaded: true }); }
-    else { upd({ items, synced: true }); setTimeout(() => upd({ synced: false }), 2000); }
+  db=firebase.database();
+  dbRef=db.ref('inventory');
+  let first=true;
+  dbRef.on('value', snap=>{
+    const d=snap.val()||{};
+    const items=d.items||[];
+    const settings=d.settings||{budget:null};
+    if(first){ first=false; upd({items,settings,loaded:true},true); checkSmartNotifs(items); render(); }
+    else { upd({items,settings,synced:true}); setTimeout(()=>upd({synced:false}),2000); }
   });
 }
 
-function persist(items) {
-  upd({ items }, true);
-  if (!db) return;
-  dbRef.set({ items, ts: Date.now() });
+function persist(items, settings){
+  upd({items, settings:settings||state.settings}, true);
+  if(!db) return;
+  dbRef.set({ items, settings:settings||state.settings, ts:Date.now() });
+}
+
+// ---- AUTOCOMPLETE ----
+function getAcSuggestions(val){
+  if(!val||val.length<2) return [];
+  const q=val.toLowerCase();
+  return [...new Set(state.items.map(i=>i.name))].filter(n=>n.toLowerCase().includes(q)&&n.toLowerCase()!==q).slice(0,5);
+}
+
+// ---- SMART NOTIFICATIONS ----
+function calculateCycle(name){
+  const bought=state.items
+    .filter(i=>i.name.toLowerCase()===name.toLowerCase()&&i.status==='bought'&&i.purchaseDate)
+    .sort((a,b)=>new Date(a.purchaseDate)-new Date(b.purchaseDate));
+  if(bought.length<2) return null;
+  let total=0;
+  for(let i=1;i<bought.length;i++)
+    total+=(new Date(bought[i].purchaseDate)-new Date(bought[i-1].purchaseDate))/86400000;
+  return Math.round(total/(bought.length-1));
+}
+
+function checkSmartNotifs(items){
+  const names=[...new Set(items.filter(i=>i.status==='bought').map(i=>i.name))];
+  const notifs=[];
+  names.forEach(name=>{
+    const cycle=calculateCycle(name);
+    if(!cycle) return;
+    const lastBought=items.filter(i=>i.name===name&&i.status==='bought'&&i.purchaseDate)
+      .sort((a,b)=>new Date(b.purchaseDate)-new Date(a.purchaseDate))[0];
+    if(!lastBought) return;
+    const daysSince=Math.round((Date.now()-new Date(lastBought.purchaseDate))/86400000);
+    const alreadyActive=items.some(i=>i.name===name&&(i.status==='need_to_buy'||i.status==='in_cart'));
+    if(daysSince>=Math.round(cycle*0.75)&&!alreadyActive){
+      notifs.push({name,daysSince,cycle,urgent:daysSince>=cycle});
+    }
+  });
+  const sorted=notifs.sort((a,b)=>b.daysSince-a.daysSince);
+  upd({smartNotifs:sorted},true);
+  // Browser notification
+  if(sorted.length&&Notification.permission==='granted'){
+    const urgent=sorted.filter(n=>n.urgent);
+    if(urgent.length){
+      new Notification('Uy Inventori 🏠',{
+        body:urgent.slice(0,3).map(n=>`${n.name} (${n.daysSince} kun)`).join(', ')+' tugayapti!',
+        tag:'smart-notif'
+      });
+    }
+  }
+}
+
+async function requestNotifPerm(){
+  if(!('Notification' in window)){ notify("Bu brauzer bildirishnomani qo'llab-quvvatlamaydi",'err'); return; }
+  const perm=await Notification.requestPermission();
+  if(perm==='granted'){
+    notify('Bildirishnomalar yoqildi! ✅');
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('/uy-inventori/sw.js').catch(()=>{});
+    }
+  } else {
+    notify("Bildirishnoma ruxsati berilmadi",'err');
+  }
+  render();
+}
+
+// ---- QUICK ADD ----
+function getQuickItems(){
+  const freq={};
+  state.items.filter(i=>i.status==='bought').forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
+  return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,count])=>({name,count}));
+}
+
+function quickAdd(name){
+  const exists=state.items.some(i=>i.name===name&&(i.status==='need_to_buy'||i.status==='in_cart'));
+  if(exists){ notify(`"${name}" allaqachon ro'yxatda`,'info'); return; }
+  const last=state.items.filter(i=>i.name===name&&i.status==='bought')
+    .sort((a,b)=>new Date(b.purchaseDate)-new Date(a.purchaseDate))[0];
+  const now=new Date().toISOString();
+  const newItem={id:uid(),name,category:last?.category||'food',price:last?.price||null,
+    status:'need_to_buy',dateAdded:now,purchaseDate:null,month:curYM()};
+  persist([newItem,...state.items]);
+  notify(`"${name}" qo'shildi`);
+}
+
+function notifQuickAdd(name){
+  const exists=state.items.some(i=>i.name===name&&(i.status==='need_to_buy'||i.status==='in_cart'));
+  if(exists){ notify(`"${name}" allaqachon ro'yxatda`,'info'); return; }
+  const last=state.items.filter(i=>i.name===name&&i.status==='bought')
+    .sort((a,b)=>new Date(b.purchaseDate)-new Date(a.purchaseDate))[0];
+  const now=new Date().toISOString();
+  persist([{id:uid(),name,category:last?.category||'food',price:last?.price||null,
+    status:'need_to_buy',dateAdded:now,purchaseDate:null,month:curYM()},...state.items]);
+  notify(`"${name}" ro'yxatga qo'shildi`);
+}
+
+// ---- BUDGET ----
+function getBudgetStatus(){
+  const{budget}=state.settings;
+  if(!budget) return null;
+  const spent=state.items.filter(i=>i.status==='bought'&&i.month===curYM()&&i.price).reduce((s,i)=>s+i.price,0);
+  const pct=Math.round((spent/budget)*100);
+  return{budget,spent,pct,color:pct>=90?'var(--rd-t)':pct>=70?'var(--am-t)':'var(--gn-t)'};
+}
+
+// ---- AI NORMALIZE ----
+async function aiNormalize(typedName){
+  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY') return null;
+  const existingNames=[...new Set(state.items.map(i=>i.name))];
+  if(!existingNames.length) return null;
+  if(existingNames.some(n=>n.toLowerCase()===typedName.toLowerCase())) return null;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:30,
+        messages:[{role:'user',content:`"${typedName}" so'zi quyidagi ro'yxatdagi qaysi biri bilan bir xil mahsulot? (imlo xatosi, dialekt, boshqa til bo'lishi mumkin): ${existingNames.map(n=>`"${n}"`).join(', ')}. Faqat o'sha mahsulot nomini yoz, yoki "null" yoz.`}]
+      })
+    });
+    const data=await res.json();
+    const answer=data.content?.[0]?.text?.trim();
+    if(!answer||answer==='null') return null;
+    return existingNames.find(n=>n.toLowerCase()===answer.toLowerCase())||null;
+  }catch(e){return null;}
+}
+
+// ---- AI ANALYZE ----
+async function aiAnalyze(){
+  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY'){ notify("Claude API key sozlanmagan",'err'); return; }
+  upd({aiAnalysisLoading:true,aiAnalysis:null});
+  const bought=state.items.filter(i=>i.status==='bought');
+  if(bought.length<5){ upd({aiAnalysisLoading:false,aiAnalysis:"Hali yetarli ma'lumot yo'q. Kamida 5 ta mahsulot sotib olinsin."}); return; }
+  const byMonth={};
+  bought.forEach(i=>{const m=i.month||curYM();if(!byMonth[m])byMonth[m]={total:0,count:0};byMonth[m].total+=i.price||0;byMonth[m].count++;});
+  const freq={};
+  bought.forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
+  const top5=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const summary={months:byMonth,top5,totalItems:bought.length,budget:state.settings.budget};
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:600,
+        messages:[{role:'user',content:`Quyidagi uy xarajatlari ma'lumotlari asosida o'zbek tilida qisqa va amaliy tavsiya ber:
+
+Oylik xarajatlar: ${JSON.stringify(byMonth)}
+Eng ko'p olinadigan mahsulotlar: ${top5.map(([n,c])=>`${n}(${c}x)`).join(', ')}
+Jami sotib olingan: ${bought.length} ta
+Oylik byudjet: ${summary.budget?fmtP(summary.budget):'belgilanmagan'}
+
+3-4 qisqa paragrafda: tendensiya, eng ko'p xarajat ketayotgan joy, iqtisod qilish mumkin bo'lgan maslahat. Sodda, oila uchun yoz.`}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text?.trim();
+    upd({aiAnalysis:text||"Tahlil qilishda xato"});
+  }catch(e){
+    upd({aiAnalysis:"Internet xatosi. Qayta urinib ko'ring."});
+  }
+  upd({aiAnalysisLoading:false});
+}
+
+// ---- RECEIPT SCAN ----
+async function scanReceipt(base64,mediaType){
+  if(CLAUDE_API_KEY==='YOUR_CLAUDE_API_KEY'){notify("Claude API key sozlanmagan",'err');return;}
+  upd({scanLoading:true,scanItems:null,scanSelected:[]});
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',max_tokens:400,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+          {type:'text',text:'Bu chek/kassa yoki xarid ro\'yxati rasmidan mahsulot nomlarini ajrat. O\'zbek tiliga tarjima qil. Faqat JSON array: ["Mahsulot1","Mahsulot2"]. Boshqa hech narsa yozma.'}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text?.trim();
+    const clean=text.replace(/```json|```/g,'').trim();
+    const items=JSON.parse(clean);
+    upd({scanItems:Array.isArray(items)?items:[],scanSelected:Array.isArray(items)?items.map((_,i)=>i):[],scanLoading:false});
+  }catch(e){
+    notify("Chekni o'qib bo'lmadi. Boshqa rasm sinab ko'ring",'err');
+    upd({scanLoading:false});
+  }
 }
 
 // ---- ACTIONS ----
-function startAdd()   { upd({ editItem:null, form:{ name:'', category:'food', price:'', status:'need_to_buy' }, tab:'add' }); }
-function cancelForm() { upd({ tab:'list', editItem:null }); }
-function startEdit(id) {
-  const item = state.items.find(i => i.id === id);
-  if (!item) return;
-  upd({ editItem:item, form:{ name:item.name, category:item.category, price:item.price != null ? String(item.price) : '', status:item.status }, open:null, tab:'add' });
-}
-function toggleOpen(id) { upd({ open: state.open === id ? null : id }); }
-
-function advance(id) {
-  const map = { need_to_buy:'in_cart', in_cart:'bought' };
-  const now = new Date().toISOString();
-  persist(state.items.map(i => {
-    if (i.id !== id) return i;
-    const ns = map[i.status]; if (!ns) return i;
-    return { ...i, status:ns, purchaseDate: ns==='bought' ? now : i.purchaseDate, month: ns==='bought' ? curYM() : i.month };
+function advance(id){
+  const map={need_to_buy:'in_cart',in_cart:'bought'};
+  const now=new Date().toISOString();
+  persist(state.items.map(i=>{
+    if(i.id!==id) return i;
+    const ns=map[i.status]; if(!ns) return i;
+    return{...i,status:ns,purchaseDate:ns==='bought'?now:i.purchaseDate,month:ns==='bought'?curYM():i.month};
   }));
 }
-
-function resetItem(id) {
-  persist(state.items.map(i => i.id === id ? { ...i, status:'need_to_buy', purchaseDate:null } : i));
-  upd({ open: null });
+function resetItem(id){persist(state.items.map(i=>i.id===id?{...i,status:'need_to_buy',purchaseDate:null}:i));upd({open:null});}
+function removeItem(id){persist(state.items.filter(i=>i.id!==id));upd({open:null});notify("O'chirildi");}
+function startAdd(){upd({editItem:null,form:{name:'',category:'food',price:'',status:'need_to_buy'},tab:'add'});}
+function cancelForm(){upd({tab:'list',editItem:null,aiConfirm:null,aiChecking:false,acSuggestions:[]});}
+function startEdit(id){
+  const item=state.items.find(i=>i.id===id); if(!item) return;
+  upd({editItem:item,form:{name:item.name,category:item.category,price:item.price!=null?String(item.price):'',status:item.status},open:null,tab:'add'});
 }
+function toggleOpen(id){upd({open:state.open===id?null:id});}
 
-function removeItem(id) {
-  persist(state.items.filter(i => i.id !== id));
-  upd({ open: null });
-  notify("O'chirildi");
-}
-
-function handleSave() {
-  const { form, editItem, aiConfirm } = state;
-  if (!form.name.trim()) { notify("Nom kiriting!", 'err'); return; }
-
-  // aiConfirm holati — foydalanuvchi "ha" yoki "yo'q" bosdi
-  const nameToSave = aiConfirm ? aiConfirm.confirmed : form.name.trim();
-
-  const p = form.price !== '' ? +form.price : null;
+function handleSave(){
+  const{form,editItem,aiConfirm}=state;
+  if(!form.name.trim()){notify("Nom kiriting!",'err');return;}
+  const nameToSave=aiConfirm?.confirmed||form.name.trim();
+  const p=form.price!==''?+form.price:null;
   let next;
-  if (editItem) {
-    next = state.items.map(i => i.id !== editItem.id ? i : {
-      ...i, name:nameToSave, category:form.category, price:p, status:form.status,
-      purchaseDate: form.status==='bought' && i.status!=='bought' ? new Date().toISOString() : i.purchaseDate,
-      month: form.status==='bought' && i.status!=='bought' ? curYM() : i.month,
+  if(editItem){
+    next=state.items.map(i=>i.id!==editItem.id?i:{
+      ...i,name:nameToSave,category:form.category,price:p,status:form.status,
+      purchaseDate:form.status==='bought'&&i.status!=='bought'?new Date().toISOString():i.purchaseDate,
+      month:form.status==='bought'&&i.status!=='bought'?curYM():i.month,
     });
     notify('Yangilandi');
-  } else {
-    const now = new Date().toISOString();
-    next = [{ id:uid(), name:nameToSave, category:form.category, price:p, status:form.status,
-      dateAdded:now, purchaseDate:form.status==='bought' ? now : null, month:curYM() }, ...state.items];
+  }else{
+    const now=new Date().toISOString();
+    next=[{id:uid(),name:nameToSave,category:form.category,price:p,status:form.status,
+      dateAdded:now,purchaseDate:form.status==='bought'?now:null,month:curYM()},...state.items];
     notify("Qo'shildi");
   }
   persist(next);
-  upd({ tab:'list', editItem:null, aiConfirm:null, aiChecking:false,
-        form:{ name:'', category:'food', price:'', status:'need_to_buy' } });
+  upd({tab:'list',editItem:null,aiConfirm:null,aiChecking:false,acSuggestions:[],
+       form:{name:'',category:'food',price:'',status:'need_to_buy'}});
 }
 
-async function trySave() {
-  const { form, editItem, aiChecking } = state;
-  if (!form.name.trim()) { notify("Nom kiriting!", 'err'); return; }
-  if (aiChecking) return;
-
-  // AI tekshiruvi — faqat yangi mahsulot qo'shayotganda
-  if (!editItem && CLAUDE_API_KEY !== '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') {
-    upd({ aiChecking: true, acSuggestions: [] });
-    const match = await aiNormalize(form.name.trim());
-    upd({ aiChecking: false });
-    if (match && match !== form.name.trim()) {
-      // AI o'xshash nom topdi — foydalanuvchiga so'ra
-      upd({ aiConfirm: { typed: form.name.trim(), suggested: match, confirmed: null } });
-      return;
-    }
+async function trySave(){
+  const{form,editItem,aiChecking}=state;
+  if(!form.name.trim()){notify("Nom kiriting!",'err');return;}
+  if(aiChecking) return;
+  if(!editItem&&CLAUDE_API_KEY!=='YOUR_CLAUDE_API_KEY'){
+    upd({aiChecking:true,acSuggestions:[]});
+    const match=await aiNormalize(form.name.trim());
+    upd({aiChecking:false});
+    if(match&&match!==form.name.trim()){upd({aiConfirm:{typed:form.name.trim(),suggested:match,confirmed:null}});return;}
   }
   handleSave();
 }
 
-// ---- EVENT DELEGATION ----
-app.addEventListener('click', e => {
-  const t = e.target.closest('[data-a]');
-  if (!t) return;
-  const a = t.dataset.a, v = t.dataset.v;
-  if (a === 'tab')      upd({ tab: v });
-  if (a === 'filter')   upd({ filter: v });
-  if (a === 'toggle')   toggleOpen(v);
-  if (a === 'advance')  advance(v);
-  if (a === 'reset')    resetItem(v);
-  if (a === 'remove')   removeItem(v);
-  if (a === 'edit')     startEdit(v);
-  if (a === 'add')      startAdd();
-  if (a === 'cat')      upd({ form: { ...state.form, category: v } });
-  if (a === 'st')       upd({ form: { ...state.form, status: v } });
-  if (a === 'save')     trySave();
-  if (a === 'cancel')   cancelForm();
-  if (a === 'ac-pick')  { upd({ form: { ...state.form, name: v }, acSuggestions: [] }); setTimeout(()=>{ const ni=$id('ninp'); if(ni){ni.value=v;ni.focus();}},30); }
-  if (a === 'ai-yes')   { upd({ aiConfirm: { ...state.aiConfirm, confirmed: state.aiConfirm.suggested } }); handleSave(); }
-  if (a === 'ai-no')    { upd({ aiConfirm: { ...state.aiConfirm, confirmed: state.aiConfirm.typed } }); handleSave(); }
+function addScanItems(){
+  const{scanItems,scanSelected}=state;
+  if(!scanItems) return;
+  const toAdd=scanSelected.map(i=>scanItems[i]).filter(Boolean);
+  const now=new Date().toISOString();
+  const newItems=toAdd.map(name=>({id:uid(),name,category:'food',price:null,
+    status:'need_to_buy',dateAdded:now,purchaseDate:null,month:curYM()}));
+  persist([...newItems,...state.items]);
+  notify(`${toAdd.length} ta mahsulot qo'shildi`);
+  upd({scanItems:null,scanSelected:[],tab:'list'});
+}
+
+function saveBudget(){
+  const b=+state.budgetInput;
+  if(!b||b<0){notify("To'g'ri miqdor kiriting",'err');return;}
+  const newSettings={...state.settings,budget:b};
+  persist(state.items,newSettings);
+  upd({showBudgetEdit:false,budgetInput:''});
+  notify("Byudjet saqlandi");
+}
+
+// ---- EVENTS ----
+app.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a]'); if(!t) return;
+  const a=t.dataset.a,v=t.dataset.v;
+  if(a==='tab')       upd({tab:v,open:null});
+  if(a==='filter')    upd({filter:v});
+  if(a==='toggle')    toggleOpen(v);
+  if(a==='advance')   advance(v);
+  if(a==='reset')     resetItem(v);
+  if(a==='remove')    removeItem(v);
+  if(a==='edit')      startEdit(v);
+  if(a==='add')       startAdd();
+  if(a==='cat')       upd({form:{...state.form,category:v}});
+  if(a==='st')        upd({form:{...state.form,status:v}});
+  if(a==='save')      trySave();
+  if(a==='cancel')    cancelForm();
+  if(a==='ac-pick')   { upd({form:{...state.form,name:v},acSuggestions:[]}); setTimeout(()=>{const ni=$id('ninp');if(ni){ni.value=v;ni.focus();}},30); }
+  if(a==='ai-yes')    { upd({aiConfirm:{...state.aiConfirm,confirmed:state.aiConfirm.suggested}});handleSave(); }
+  if(a==='ai-no')     { upd({aiConfirm:{...state.aiConfirm,confirmed:state.aiConfirm.typed}});handleSave(); }
+  if(a==='quick-add') quickAdd(v);
+  if(a==='notif-add') notifQuickAdd(v);
+  if(a==='notif-perm') requestNotifPerm();
+  if(a==='ai-analyze') aiAnalyze();
+  if(a==='scan-open') $id('cam-inp').click();
+  if(a==='scan-toggle'){ const i=+v,sel=[...state.scanSelected]; sel.includes(i)?sel.splice(sel.indexOf(i),1):sel.push(i); upd({scanSelected:sel}); }
+  if(a==='scan-add')  addScanItems();
+  if(a==='budget-edit') upd({showBudgetEdit:true,budgetInput:state.settings.budget?String(state.settings.budget):''});
+  if(a==='budget-save') saveBudget();
+  if(a==='budget-clear'){ const ns={...state.settings,budget:null};persist(state.items,ns);upd({showBudgetEdit:false}); }
 });
 
-app.addEventListener('input', e => {
-  if (e.target.id === 'ninp') {
-    const val = e.target.value;
-    state.form.name = val;
-    state.acSuggestions = getAcSuggestions(val);
-    state.aiConfirm = null;
-    // Faqat suggestion dropdownni yangilash (to'liq render emas)
-    const drop = $id('ac-drop');
-    if (drop) {
-      if (state.acSuggestions.length) {
-        drop.innerHTML = state.acSuggestions.map(s =>
-          `<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`
-        ).join('');
-        drop.style.display = 'block';
-      } else {
-        drop.style.display = 'none';
-      }
-    }
+app.addEventListener('input',e=>{
+  if(e.target.id==='ninp'){
+    const val=e.target.value; state.form.name=val; state.aiConfirm=null;
+    state.acSuggestions=getAcSuggestions(val);
+    const drop=$id('ac-drop');
+    if(drop){ if(state.acSuggestions.length){drop.innerHTML=state.acSuggestions.map(s=>`<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`).join('');drop.style.display='block';}else{drop.style.display='none';}}
   }
-  if (e.target.id === 'pinp') {
-    const v = e.target.value.replace(/[^0-9]/g, '');
-    state.form.price = v;
-    e.target.value = v;
-    const prev = $id('pprev');
-    if (prev) prev.textContent = v ? fmtP(+v) || '' : '';
-  }
+  if(e.target.id==='pinp'){const v=e.target.value.replace(/[^0-9]/g,'');state.form.price=v;e.target.value=v;const p=$id('pprev');if(p)p.textContent=v?fmtP(+v)||''  :'';}
+  if(e.target.id==='binp'){ state.budgetInput=e.target.value.replace(/[^0-9]/g,''); e.target.value=state.budgetInput; }
+});
+
+$id('cam-inp').addEventListener('change',async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const base64=ev.target.result.split(',')[1];
+    const mediaType=file.type||'image/jpeg';
+    upd({tab:'ai'});
+    scanReceipt(base64,mediaType);
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
 });
 
 // ---- RENDER ----
-function render() {
-  if (!CONFIGURED) { renderSetup(); return; }
-  if (!state.loaded) {
-    app.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:10px;color:var(--muted)"><i class="ti ti-refresh" style="font-size:28px"></i><span>Yuklanmoqda...</span></div>';
-    return;
-  }
+function render(){
+  if(!CONFIGURED){renderSetup();return;}
+  if(!state.loaded){app.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:70vh;gap:10px;color:var(--muted)"><i class="ti ti-refresh spin" style="font-size:28px"></i><span style="font-size:14px">Yuklanmoqda...</span></div>';return;}
 
-  const { items, tab, filter, open, flash, synced, form, editItem } = state;
-  const cnt = {
-    need_to_buy: items.filter(i => i.status === 'need_to_buy').length,
-    in_cart:     items.filter(i => i.status === 'in_cart').length,
-    bought:      items.filter(i => i.status === 'bought').length,
-  };
-  const shown = filter === 'all' ? items : items.filter(i => i.status === filter);
+  const{items,tab,filter,open,flash,synced,form,editItem,smartNotifs,aiAnalysis,aiAnalysisLoading,scanLoading,scanItems,scanSelected,showBudgetEdit}=state;
+  const cnt={need_to_buy:items.filter(i=>i.status==='need_to_buy').length,in_cart:items.filter(i=>i.status==='in_cart').length,bought:items.filter(i=>i.status==='bought').length};
+  const shown=filter==='all'?items:items.filter(i=>i.status===filter);
+  const notifCount=smartNotifs.length;
+  const inCart=items.filter(i=>i.status==='in_cart');
+  const budgetSt=getBudgetStatus();
 
-  let h = `
+  let h=`
   <div class="hdr">
     <div class="hdr-top">
       <div>
         <div class="hdr-title"><i class="ti ti-home" style="font-size:15px"></i>Uy inventori</div>
-        <div class="hdr-sub${synced ? ' sync' : ''}">
-          ${synced ? '<i class="ti ti-check" style="font-size:11px"></i> Yangilandi' : 'Azam &amp; oila &middot; real-time sinxron'}
+        <div class="hdr-sub${synced?' sync':''}">
+          ${synced?'<i class="ti ti-check" style="font-size:11px"></i> Yangilandi':'Azam &amp; oila &middot; real-time'}
         </div>
       </div>
       <button class="add-btn" data-a="add"><i class="ti ti-plus" style="font-size:13px"></i>Qo&#39;shish</button>
     </div>
     <div class="tabs">
-      <button class="tb${tab === 'list' ? ' on' : ''}" data-a="tab" data-v="list"><i class="ti ti-list" style="font-size:12px"></i>Ro&#39;yxat</button>
-      <button class="tb${tab === 'stats' ? ' on' : ''}" data-a="tab" data-v="stats"><i class="ti ti-chart-bar" style="font-size:12px"></i>Statistika</button>
+      <button class="tb${tab==='list'?' on':''}" data-a="tab" data-v="list"><i class="ti ti-list" style="font-size:12px"></i>Ro&#39;yxat${notifCount?`<span class="tb-badge">${notifCount}</span>`:''}</button>
+      <button class="tb${tab==='shop'?' on':''}" data-a="tab" data-v="shop"><i class="ti ti-shopping-cart" style="font-size:12px"></i>Do&#39;kon${cnt.in_cart?`<span class="tb-badge">${cnt.in_cart}</span>`:''}</button>
+      <button class="tb${tab==='stats'?' on':''}" data-a="tab" data-v="stats"><i class="ti ti-chart-bar" style="font-size:12px"></i>Statistika</button>
+      <button class="tb${tab==='ai'?' on':''}" data-a="tab" data-v="ai"><i class="ti ti-robot" style="font-size:12px"></i>AI</button>
     </div>
   </div>
   <div class="cnt">
-  ${flash ? `<div class="fl ${flash.type}">${esc(flash.msg)}</div>` : ''}
-  `;
+  ${flash?`<div class="fl ${flash.type}">${esc(flash.msg)}</div>`:''}`;
 
   // ===== LIST =====
-  if (tab === 'list') {
-    h += `
+  if(tab==='list'){
+    h+=`
     <div class="chips">
-      <button class="chip${filter === 'need_to_buy' ? ' rd' : ''}" data-a="filter" data-v="${filter === 'need_to_buy' ? 'all' : 'need_to_buy'}">
+      <button class="chip${filter==='need_to_buy'?' rd':''}" data-a="filter" data-v="${filter==='need_to_buy'?'all':'need_to_buy'}">
         <div class="cv">${cnt.need_to_buy}</div><div class="cl">Kerak</div>
       </button>
-      <button class="chip${filter === 'in_cart' ? ' am' : ''}" data-a="filter" data-v="${filter === 'in_cart' ? 'all' : 'in_cart'}">
+      <button class="chip${filter==='in_cart'?' am':''}" data-a="filter" data-v="${filter==='in_cart'?'all':'in_cart'}">
         <div class="cv">${cnt.in_cart}</div><div class="cl">Savatda</div>
       </button>
-      <button class="chip${filter === 'bought' ? ' gn' : ''}" data-a="filter" data-v="${filter === 'bought' ? 'all' : 'bought'}">
+      <button class="chip${filter==='bought'?' gn':''}" data-a="filter" data-v="${filter==='bought'?'all':'bought'}">
         <div class="cv">${cnt.bought}</div><div class="cl">Olindi</div>
       </button>
-    </div>
-    <div class="pills">
-      <button class="pill${filter === 'all' ? ' on' : ''}" data-a="filter" data-v="all">Hammasi (${items.length})</button>
-      <button class="pill${filter === 'need_to_buy' ? ' on' : ''}" data-a="filter" data-v="need_to_buy">Kerak (${cnt.need_to_buy})</button>
-      <button class="pill${filter === 'in_cart' ? ' on' : ''}" data-a="filter" data-v="in_cart">Savatda (${cnt.in_cart})</button>
-      <button class="pill${filter === 'bought' ? ' on' : ''}" data-a="filter" data-v="bought">Olindi (${cnt.bought})</button>
     </div>`;
 
-    if (!shown.length) {
-      h += `<div class="empty"><i class="ti ti-clipboard-list"></i><p>Hali mahsulot yo&#39;q</p><button class="add-btn" style="margin:12px auto 0" data-a="add">+ Qo&#39;shing</button></div>`;
-    } else {
-      h += '<div class="items">';
-      shown.forEach(item => {
-        const sc = SC[item.status], cat = CATS[item.category] || CATS.other, isOpen = open === item.id;
-        h += `
-        <div class="ic${isOpen ? ' open' : ''}">
+    // Smart notifs
+    if(smartNotifs.length){
+      h+=`<div class="notif-list">`;
+      smartNotifs.slice(0,3).forEach(n=>{
+        h+=`<div class="notif-item ${n.urgent?'urgent':'warn'}">
+          <span class="notif-icon">${n.urgent?'🔴':'🟡'}</span>
+          <div class="notif-text">
+            <div class="notif-name">${esc(n.name)}</div>
+            <div class="notif-desc">${n.daysSince} kun oldin olindi &middot; tsikl: ~${n.cycle} kun</div>
+          </div>
+          <button class="notif-add" data-a="notif-add" data-v="${esc(n.name)}">+ Qo&#39;sh</button>
+        </div>`;
+      });
+      if(Notification.permission!=='granted'){
+        h+=`<button class="add-btn" style="width:100%;justify-content:center;padding:9px" data-a="notif-perm"><i class="ti ti-bell" style="font-size:13px"></i>Telefon bildirishnomalarini yoqish</button>`;
+      }
+      h+=`</div>`;
+    }
+
+    // Quick add
+    const quick=getQuickItems();
+    if(quick.length){
+      h+=`<div class="qa-section">
+        <div class="qa-label"><i class="ti ti-clock" style="font-size:12px"></i>Tez qo&#39;shish</div>
+        <div class="qa-scroll">
+          ${quick.map(q=>`<button class="qa-btn" data-a="quick-add" data-v="${esc(q.name)}"><i class="ti ti-plus" style="font-size:13px"></i>${esc(q.name)}</button>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    // Pills
+    h+=`<div class="pills">
+      <button class="pill${filter==='all'?' on':''}" data-a="filter" data-v="all">Hammasi (${items.length})</button>
+      <button class="pill${filter==='need_to_buy'?' on':''}" data-a="filter" data-v="need_to_buy">Kerak (${cnt.need_to_buy})</button>
+      <button class="pill${filter==='in_cart'?' on':''}" data-a="filter" data-v="in_cart">Savatda (${cnt.in_cart})</button>
+      <button class="pill${filter==='bought'?' on':''}" data-a="filter" data-v="bought">Olindi (${cnt.bought})</button>
+    </div>`;
+
+    if(!shown.length){
+      h+=`<div class="empty"><i class="ti ti-clipboard-list"></i><p>Hali mahsulot yo&#39;q</p><button class="add-btn" style="margin:12px auto 0" data-a="add">+ Qo&#39;shish</button></div>`;
+    }else{
+      h+=`<div class="items">`;
+      shown.forEach(item=>{
+        const sc=SC[item.status],cat=CATS[item.category]||CATS.other,isOpen=open===item.id;
+        const cycle=calculateCycle(item.name);
+        h+=`<div class="ic${isOpen?' open':''}">
           <div class="ir" data-a="toggle" data-v="${item.id}">
             <div class="ci"><i class="ti ${cat.i}"></i></div>
             <div class="ii">
               <div class="iname">${esc(item.name)}</div>
-              <div class="isub">${esc(cat.l)}${item.price ? ' &middot; ' + esc(fmtP(item.price)) : ''}</div>
+              <div class="isub">${esc(cat.l)}${item.price?' &middot; '+esc(fmtP(item.price)):''}</div>
             </div>
             <div class="iright">
               <span class="bdg ${sc.cls}">${sc.lbl}</span>
-              ${sc.ns ? `<button class="nbtn" data-a="advance" data-v="${item.id}"><i class="ti ${sc.ni}" style="font-size:11px"></i>${sc.nl}</button>` : ''}
+              ${sc.ns?`<button class="nbtn" data-a="advance" data-v="${item.id}"><i class="ti ${sc.ni}" style="font-size:11px"></i>${sc.nl}</button>`:''}
             </div>
           </div>
-          ${isOpen ? `
-          <div class="exp">
+          ${isOpen?`<div class="exp">
+            ${cycle&&item.status==='bought'?`<div class="cycle-info"><i class="ti ti-refresh" style="font-size:11px"></i>Odatda har ${cycle} kunda olinadi</div>`:''}
             <div class="edates">
-              ${item.dateAdded ? `<span><i class="ti ti-calendar" style="font-size:11px"></i> Qo&#39;shildi: ${new Date(item.dateAdded).toLocaleDateString('uz-UZ')}</span>` : ''}
-              ${item.purchaseDate ? `<span><i class="ti ti-calendar-check" style="font-size:11px"></i> Olindi: ${new Date(item.purchaseDate).toLocaleDateString('uz-UZ')}</span>` : ''}
+              ${item.dateAdded?`<span><i class="ti ti-calendar" style="font-size:11px"></i> ${new Date(item.dateAdded).toLocaleDateString('ru-RU')}</span>`:''}
+              ${item.purchaseDate?`<span><i class="ti ti-check" style="font-size:11px"></i> ${new Date(item.purchaseDate).toLocaleDateString('ru-RU')}</span>`:''}
             </div>
             <div class="eacts">
               <button class="ab" data-a="edit" data-v="${item.id}"><i class="ti ti-edit" style="font-size:12px"></i>Tahrirlash</button>
-              ${item.status !== 'need_to_buy' ? `<button class="ab am-s" data-a="reset" data-v="${item.id}"><i class="ti ti-refresh" style="font-size:12px"></i>Qayta</button>` : ''}
+              ${item.status!=='need_to_buy'?`<button class="ab am-s" data-a="reset" data-v="${item.id}"><i class="ti ti-refresh" style="font-size:12px"></i>Qayta</button>`:''}
               <button class="ab rd-s" data-a="remove" data-v="${item.id}"><i class="ti ti-trash" style="font-size:13px"></i></button>
             </div>
-          </div>` : ''}
+          </div>`:''}
         </div>`;
       });
-      h += '</div>';
+      h+=`</div>`;
+    }
+  }
+
+  // ===== SHOP MODE =====
+  if(tab==='shop'){
+    const shopTotal=inCart.reduce((s,i)=>s+(i.price||0),0);
+    if(!inCart.length){
+      h+=`<div class="empty"><i class="ti ti-shopping-cart"></i><p>Savat bo&#39;sh</p><p style="font-size:13px;margin-top:6px">Mahsulotlarni "Savatga" o&#39;tkazing</p></div>`;
+    }else{
+      h+=`<div class="shop-total"><span style="font-size:14px;color:var(--muted)">Taxminiy jami</span><span style="font-size:18px;font-weight:500">${shopTotal?fmtP(shopTotal):'—'}</span></div>`;
+      h+=`<div class="shop-items">`;
+      inCart.forEach(item=>{
+        h+=`<div class="shop-item">
+          <div class="shop-info">
+            <div class="shop-name">${esc(item.name)}</div>
+            <div class="shop-meta">${esc((CATS[item.category]||CATS.other).l)}${item.price?' &middot; '+esc(fmtP(item.price)):''}</div>
+          </div>
+          <button class="shop-done" data-a="advance" data-v="${item.id}"><i class="ti ti-check"></i></button>
+        </div>`;
+      });
+      h+=`</div>`;
+    }
+    // Also show need_to_buy as reference
+    if(cnt.need_to_buy){
+      h+=`<div style="font-size:12px;color:var(--muted);margin-top:4px;text-align:center"><i class="ti ti-alert-circle" style="font-size:11px"></i> Yana ${cnt.need_to_buy} ta mahsulot "Kerak" da turibdi</div>`;
     }
   }
 
   // ===== STATS =====
-  if (tab === 'stats') {
-    const bought = items.filter(i => i.status === 'bought');
-    const byM = {};
-    bought.forEach(i => {
-      const m = i.month || curYM();
-      if (!byM[m]) byM[m] = { t:0, c:0 };
-      byM[m].t += i.price || 0; byM[m].c++;
-    });
-    const mArr = Object.entries(byM).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 6);
-    const maxT = Math.max(...mArr.map(([,v]) => v.t), 1);
-    const freq = {};
-    bought.forEach(i => { freq[i.name] = (freq[i.name] || 0) + 1; });
-    const top5 = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 5);
-    const thisYM = curYM(), tD = byM[thisYM] || { t:0, c:0 };
+  if(tab==='stats'){
+    const bought=items.filter(i=>i.status==='bought');
+    const byM={};
+    bought.forEach(i=>{const m=i.month||curYM();if(!byM[m])byM[m]={t:0,c:0};byM[m].t+=i.price||0;byM[m].c++;});
+    const mArr=Object.entries(byM).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);
+    const maxT=Math.max(...mArr.map(([,v])=>v.t),1);
+    const freq={};bought.forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
+    const top5=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const tD=byM[curYM()]||{t:0,c:0};
 
-    h += `
-    <div class="sc">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Bu oy &mdash; ${mLbl(thisYM)}</div>
-      <div style="font-size:26px;font-weight:500;margin-bottom:4px">${tD.t > 0 ? fmtP(tD.t) : '&mdash;'}</div>
-      <div style="font-size:12px;color:var(--muted)">${tD.c} ta mahsulot sotib olindi</div>
-    </div>
-    <div class="sg">
-      <div class="sk"><i class="ti ti-package"></i><div class="n">${items.length}</div><div class="l">Jami mahsulot</div></div>
-      <div class="sk"><i class="ti ti-clock"></i><div class="n">${cnt.need_to_buy}</div><div class="l">Hali kerak</div></div>
+    // Budget card
+    h+=`<div class="sc">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div>
+          <div style="font-size:12px;color:var(--muted)">Bu oy &mdash; ${mLbl(curYM())}</div>
+          <div style="font-size:26px;font-weight:500;margin-top:2px">${tD.t>0?fmtP(tD.t):'&mdash;'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${tD.c} ta mahsulot</div>
+        </div>
+        <button style="padding:8px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--surface);font-size:12px;color:var(--muted)" data-a="budget-edit"><i class="ti ti-target" style="font-size:13px"></i> Byudjet</button>
+      </div>`;
+    if(budgetSt){
+      h+=`<div class="budget-bar"><div class="budget-fill" style="width:${Math.min(budgetSt.pct,100)}%;background:${budgetSt.color}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>${fmtP(budgetSt.spent)}</span><span>${budgetSt.pct}% / ${fmtP(budgetSt.budget)}</span></div>
+      <button data-a="budget-clear" style="margin-top:8px;font-size:11px;color:var(--rd-t);background:none;border:none;padding:0">Byudjetni o&#39;chirish</button>`;
+    }
+    if(showBudgetEdit){
+      h+=`<div class="budget-edit" style="margin-top:10px">
+        <input id="binp" type="text" inputmode="numeric" placeholder="500000" value="${esc(state.budgetInput)}">
+        <button class="budget-save" data-a="budget-save">Saqlash</button>
+      </div>`;
+    }
+    h+=`</div>`;
+
+    h+=`<div class="sg">
+      <div class="sk"><i class="ti ti-package"></i><div class="n">${items.length}</div><div class="l">Jami</div></div>
+      <div class="sk"><i class="ti ti-clock"></i><div class="n">${cnt.need_to_buy}</div><div class="l">Kerak</div></div>
       <div class="sk"><i class="ti ti-shopping-cart"></i><div class="n">${cnt.in_cart}</div><div class="l">Savatda</div></div>
-      <div class="sk"><i class="ti ti-circle-check"></i><div class="n">${cnt.bought}</div><div class="l">Sotib olindi</div></div>
+      <div class="sk"><i class="ti ti-circle-check"></i><div class="n">${cnt.bought}</div><div class="l">Olindi</div></div>
     </div>`;
 
-    if (mArr.length) {
-      h += '<div class="sc cs"><h3><i class="ti ti-chart-bar" style="font-size:14px"></i>Oylik xarajat</h3>';
-      mArr.forEach(([m, d]) => {
-        h += `<div class="bi">
-          <div class="bl"><span style="color:var(--muted)">${mLbl(m)}</span><span style="font-weight:500">${d.t > 0 ? fmtP(d.t) : '&mdash;'}</span></div>
+    if(mArr.length){
+      h+=`<div class="sc cs"><h3><i class="ti ti-chart-bar" style="font-size:14px"></i>Oylik xarajat</h3>`;
+      mArr.forEach(([m,d])=>{
+        h+=`<div class="bi">
+          <div class="bl"><span style="color:var(--muted)">${mLbl(m)}</span><span style="font-weight:500">${d.t>0?fmtP(d.t):'&mdash;'}</span></div>
           <div class="bt"><div class="bf" style="width:${Math.round((d.t/maxT)*100)}%"></div></div>
           <div class="bc">${d.c} ta mahsulot</div>
         </div>`;
       });
-      h += '</div>';
+      h+=`</div>`;
     }
-
-    if (top5.length) {
-      h += '<div class="sc cs"><h3><i class="ti ti-award" style="font-size:14px"></i>Ko&#39;p sotib olinganlar</h3>';
-      top5.forEach(([name, count], i) => {
-        const rc = i === 0 ? 'background:#d97706;color:#fff' : i === 1 ? 'background:#94a3b8;color:#fff' : 'background:var(--surface);color:var(--muted)';
-        h += `<div class="tpr">
-          <span class="rnk" style="${rc}">${i+1}</span>
-          <span style="flex:1;font-size:14px">${esc(name)}</span>
-          <span style="font-size:11px;padding:2px 9px;border-radius:20px;background:var(--surface);color:var(--muted);font-weight:500">${count}x</span>
-        </div>`;
+    if(top5.length){
+      h+=`<div class="sc cs"><h3><i class="ti ti-award" style="font-size:14px"></i>Ko&#39;p olinadigan</h3>`;
+      top5.forEach(([name,count],i)=>{
+        const rc=i===0?'background:#d97706;color:#fff':i===1?'background:#94a3b8;color:#fff':'background:var(--surface);color:var(--muted)';
+        h+=`<div class="tpr"><span class="rnk" style="${rc}">${i+1}</span><span style="flex:1;font-size:14px">${esc(name)}</span><span style="font-size:11px;padding:2px 9px;border-radius:20px;background:var(--surface);color:var(--muted);font-weight:500">${count}x</span></div>`;
       });
-      h += '</div>';
+      h+=`</div>`;
     }
-
-    if (!bought.length) {
-      h += '<div class="empty"><i class="ti ti-chart-bar"></i><p>Hali statistika yo&#39;q</p><p style="font-size:13px;margin-top:4px">Mahsulotlar &#34;Olindi&#34;ga o&#39;tganda ko&#39;rinadi</p></div>';
+    if(!bought.length){
+      h+=`<div class="empty"><i class="ti ti-chart-bar"></i><p>Hali statistika yo&#39;q</p><p style="font-size:13px;margin-top:4px">"Olindi"ga o&#39;tgan mahsulotlar ko&#39;rinadi</p></div>`;
     }
   }
 
-  // ===== ADD / EDIT =====
-  if (tab === 'add') {
-    const { aiChecking, aiConfirm, acSuggestions } = state;
-    h += `
+  // ===== AI =====
+  if(tab==='ai'){
+    // Analysis
+    h+=`<div class="ai-section">
+      <h3><i class="ti ti-chart-dots" style="font-size:15px"></i>Xarajat tahlili</h3>
+      <button class="ai-action-btn" data-a="ai-analyze" ${aiAnalysisLoading?'disabled':''}>
+        ${aiAnalysisLoading?`<i class="ti ti-refresh spin" style="font-size:15px"></i>Tahlil qilinmoqda...`:`<i class="ti ti-brain" style="font-size:15px"></i>AI tahlil qilsin`}
+      </button>
+      ${aiAnalysis?`<div class="ai-result">${esc(aiAnalysis)}</div>`:''}
+    </div>`;
+
+    // Receipt scanner
+    h+=`<div class="ai-section">
+      <h3><i class="ti ti-scan" style="font-size:15px"></i>Chek skaneri</h3>
+      <p style="font-size:13px;color:var(--muted)">Kassa cheki yoki xarid ro&#39;yxati rasmini oling — AI mahsulotlarni ajratib beradi</p>
+      <button class="ai-action-btn" data-a="scan-open" ${scanLoading?'disabled':''}>
+        ${scanLoading?`<i class="ti ti-refresh spin" style="font-size:15px"></i>O&#39;qilmoqda...`:`<i class="ti ti-camera" style="font-size:15px"></i>Rasm olish / yuklash`}
+      </button>`;
+    if(scanItems){
+      h+=`<div class="scan-results">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Qo&#39;shmoqchi bo&#39;lganlaringizni tanlang:</div>
+        ${scanItems.map((name,i)=>`<div class="scan-item">
+          <div class="scan-check${scanSelected.includes(i)?' on':''}" data-a="scan-toggle" data-v="${i}">
+            ${scanSelected.includes(i)?'<i class="ti ti-check" style="font-size:12px;color:#fff"></i>':''}
+          </div>
+          <span class="scan-name">${esc(name)}</span>
+        </div>`).join('')}
+        ${scanSelected.length?`<button class="scan-add-btn" data-a="scan-add"><i class="ti ti-plus" style="font-size:15px"></i>${scanSelected.length} ta mahsulot ro&#39;yxatga qo&#39;shish</button>`:''}
+      </div>`;
+    }
+    h+=`</div>`;
+
+    // Notifications status
+    h+=`<div class="ai-section">
+      <h3><i class="ti ti-bell" style="font-size:15px"></i>Bildirishnomalar</h3>
+      <div style="font-size:13px;color:var(--muted)">Holat: ${Notification.permission==='granted'?'<span style="color:var(--gn-t)">Yoqilgan ✅</span>':Notification.permission==='denied'?'<span style="color:var(--rd-t)">Bloklangan ❌</span>':'<span style="color:var(--am-t)">So\'ralmaganidan</span>'}</div>
+      ${Notification.permission!=='granted'&&Notification.permission!=='denied'?`<button class="ai-action-btn" data-a="notif-perm"><i class="ti ti-bell" style="font-size:15px"></i>Bildirishnomalarni yoqish</button>`:''}
+      ${smartNotifs.length?`<div style="font-size:13px;color:var(--muted)">Hozir ${smartNotifs.length} ta mahsulot eslatmasi bor</div>`:'<div style="font-size:13px;color:var(--muted)">Hozircha eslatma yo&#39;q</div>'}
+    </div>`;
+  }
+
+  // ===== ADD/EDIT =====
+  if(tab==='add'){
+    const{aiChecking,aiConfirm,acSuggestions}=state;
+    h+=`
     <div class="fhd">
-      <h2>${editItem ? 'Tahrirlash' : 'Yangi mahsulot'}</h2>
+      <h2>${editItem?'Tahrirlash':'Yangi mahsulot'}</h2>
       <button class="xbtn" data-a="cancel"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg">
       <label class="fl-lbl">Mahsulot nomi *</label>
       <div class="ac-wrap">
         <input id="ninp" type="text" value="${esc(form.name)}" placeholder="Sut, Shampun, Limon..." autocomplete="off">
-        <div id="ac-drop" class="ac-drop" style="display:${acSuggestions.length ? 'block' : 'none'}">
-          ${acSuggestions.map(s => `<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`).join('')}
+        <div id="ac-drop" class="ac-drop" style="display:${acSuggestions.length?'block':'none'}">
+          ${acSuggestions.map(s=>`<div class="ac-item" data-a="ac-pick" data-v="${esc(s)}"><i class="ti ti-history"></i>${esc(s)}</div>`).join('')}
         </div>
       </div>
     </div>`;
-
-    // AI tekshiruv holati
-    if (aiChecking) {
-      h += `<div class="ai-loading"><i class="ti ti-refresh" style="animation:spin 1s linear infinite;font-size:15px"></i>AI tekshiryapti...</div>
-      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>`;
-    }
-    if (aiConfirm && !aiConfirm.confirmed) {
-      h += `<div class="ai-check">
-        <div class="ai-check-q">🤔 "${esc(aiConfirm.typed)}" — bu <b>"${esc(aiConfirm.suggested)}"</b> emasmi?</div>
+    if(aiChecking) h+=`<div class="ai-loading"><i class="ti ti-refresh spin" style="font-size:15px"></i>AI tekshiryapti...</div>`;
+    if(aiConfirm&&!aiConfirm.confirmed){
+      h+=`<div class="ai-check">
+        <div class="ai-check-q">🤔 "${esc(aiConfirm.typed)}" &mdash; bu <b>"${esc(aiConfirm.suggested)}"</b> emasmi?</div>
         <div class="ai-check-acts">
-          <button class="ai-yes" data-a="ai-yes">"${esc(aiConfirm.suggested)}" sifatida saqlash</button>
-          <button class="ai-no" data-a="ai-no">Yo'q, yangi mahsulot</button>
+          <button class="ai-yes" data-a="ai-yes">"${esc(aiConfirm.suggested)}" sifatida</button>
+          <button class="ai-no" data-a="ai-no">Yo&#39;q, yangi</button>
         </div>
       </div>`;
     }
-
-    h += `
+    h+=`
     <div class="fg">
       <label class="fl-lbl">Kategoriya</label>
       <div class="cg">
-        ${Object.entries(CATS).map(([k,v]) => `<button class="cbtn${form.category===k?' on':''}" data-a="cat" data-v="${k}"><i class="ti ${v.i}" style="font-size:15px"></i>${v.l}</button>`).join('')}
+        ${Object.entries(CATS).map(([k,v])=>`<button class="cbtn${form.category===k?' on':''}" data-a="cat" data-v="${k}"><i class="ti ${v.i}" style="font-size:15px"></i>${v.l}</button>`).join('')}
       </div>
     </div>
     <div class="fg">
       <label class="fl-lbl">Narx (ixtiyoriy)</label>
       <input id="pinp" type="text" inputmode="numeric" value="${esc(form.price)}" placeholder="0">
-      <div id="pprev" style="font-size:12px;color:var(--muted);margin-top:4px;min-height:16px">${form.price ? fmtP(+form.price) || '' : ''}</div>
+      <div id="pprev" style="font-size:12px;color:var(--muted);margin-top:4px;min-height:16px">${form.price?fmtP(+form.price)||'':''}</div>
     </div>
     <div class="fg">
       <label class="fl-lbl">Status</label>
       <div class="sr">
-        ${[{k:'need_to_buy',l:'Kerak',i:'ti-alert-circle'},{k:'in_cart',l:'Savatda',i:'ti-shopping-cart'},{k:'bought',l:'Olindi',i:'ti-circle-check'}]
-          .map(x => `<button class="sbtn${form.status===x.k?' on':''}" data-a="st" data-v="${x.k}"><i class="ti ${x.i}"></i>${x.l}</button>`).join('')}
+        ${[{k:'need_to_buy',l:'Kerak',i:'ti-alert-circle'},{k:'in_cart',l:'Savatda',i:'ti-shopping-cart'},{k:'bought',l:'Olindi',i:'ti-circle-check'}].map(x=>`<button class="sbtn${form.status===x.k?' on':''}" data-a="st" data-v="${x.k}"><i class="ti ${x.i}"></i>${x.l}</button>`).join('')}
       </div>
     </div>
-    <button class="sv-btn" data-a="save" ${aiChecking ? 'disabled style="opacity:.5"' : ''}>
-      <i class="ti ${editItem ? 'ti-check' : 'ti-plus'}" style="font-size:15px"></i>
-      ${aiChecking ? 'Tekshirilmoqda...' : editItem ? 'Saqlash' : 'Qo&#39;shish'}
+    <button class="sv-btn" data-a="save" ${aiChecking?'disabled style="opacity:.5"':''}>
+      <i class="ti ${editItem?'ti-check':'ti-plus'}" style="font-size:15px"></i>
+      ${aiChecking?'Tekshirilmoqda...':editItem?'Saqlash':'Qo&#39;shish'}
     </button>`;
   }
 
-  h += '</div>';
-  app.innerHTML = h;
+  h+=`</div>`;
+  app.innerHTML=h;
 
-  if (tab === 'add') {
-    const ni = $id('ninp');
-    if (ni) setTimeout(() => ni.focus(), 80);
-  }
+  if(tab==='add') setTimeout(()=>{const ni=$id('ninp');if(ni)ni.focus();},80);
+  if(tab==='stats'&&showBudgetEdit) setTimeout(()=>{const bi=$id('binp');if(bi)bi.focus();},80);
 }
 
-// ---- SETUP SCREEN ----
-function renderSetup() {
-  app.innerHTML = `
-  <div class="setup">
+// ---- SETUP ----
+function renderSetup(){
+  app.innerHTML=`<div class="setup">
     <div style="text-align:center;margin-bottom:24px">
       <i class="ti ti-home" style="font-size:40px;display:block;margin-bottom:10px"></i>
       <h2 style="font-size:18px;font-weight:500;margin-bottom:6px">Uy Inventori</h2>
-      <p style="font-size:13px;color:var(--muted)">Bir marta Firebase sozlash kerak (~10 daqiqa)</p>
-    </div>
+      <p style="font-size:13px;color:var(--muted)">Firebase sozlanmagan</p>
+    </div></div>`;
+}
 
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">1</span>
-      <div><b style="font-size:14px">Firebase proekt oching</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        <a href="https://console.firebase.google.com" target="_blank" class="sl">console.firebase.google.com</a>
-        &rarr; &ldquo;Add project&rdquo; &rarr; Nom bering (masalan: <code>uy-inventori</code>) &rarr; Continue &times; 3
-      </p></div>
-    </div></div>
-
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">2</span>
-      <div><b style="font-size:14px">Realtime Database yoqing</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        Build &rarr; Realtime Database &rarr; Create database &rarr; <b>&ldquo;Start in test mode&rdquo;</b> &rarr; Enable
-      </p></div>
-    </div></div>
-
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">3</span>
-      <div><b style="font-size:14px">Web app config oling</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        Project Overview &rarr; &#9881; &rarr; Project settings &rarr; Your apps &rarr; <b>&lt;/&gt; Web</b>
-        &rarr; Nom bering &rarr; Register &rarr; <code>firebaseConfig</code> ni nusxalang
-      </p></div>
-    </div></div>
-
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">4</span>
-      <div><b style="font-size:14px">index.html faylni tahrirlang</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        Fayl boshidagi <code>YOUR_API_KEY</code> va boshqa <code>YOUR_*</code> qiymatlarni
-        3-qadamda nusxalagan <code>firebaseConfig</code> dan almashtiring
-      </p></div>
-    </div></div>
-
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">5</span>
-      <div><b style="font-size:14px">GitHub Pages ga yuklang</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        <a href="https://github.com" target="_blank" class="sl">github.com</a>
-        &rarr; New repository (nom: <code>uy-inventori</code>, Public)
-        &rarr; &ldquo;uploading an existing file&rdquo; &rarr; faylni yuklang &rarr; Commit
-        &rarr; Settings &rarr; Pages &rarr; Branch: main &rarr; Save<br>
-        <b>Sizning URL:</b> <code>username.github.io/uy-inventori</code>
-      </p></div>
-    </div></div>
-
-    <div class="step"><div style="display:flex;gap:10px;align-items:flex-start">
-      <span class="sn">6</span>
-      <div><b style="font-size:14px">Ikkalangiz uy ekraniga qo&#39;shing</b>
-      <p style="font-size:12px;color:var(--muted);margin-top:5px">
-        iPhone &rarr; Safari &rarr; URL ni oching &rarr; &#8679; Share &rarr; Add to Home Screen &rarr; Add<br>
-        Endi uyda <b>Uy Inventori</b> ikonkasi ko&#39;rinadi!
-      </p></div>
-    </div></div>
-
-    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px">
-      Qiyinchilik bo&#39;lsa Claude ga screenshot yuboring &#128521;
-    </p>
-  </div>`;
+// ---- SERVICE WORKER ----
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/uy-inventori/sw.js').catch(()=>{});
 }
 
 render();
