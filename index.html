@@ -94,7 +94,7 @@ input:focus{border-color:var(--muted)}
 /* FORM */
 .fg{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .fl-lbl{font-size:12px;color:var(--muted)}
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:280px;overflow-y:auto}
 .cbtn{padding:9px 12px;border-radius:var(--rs);border:1px solid var(--bd);background:none;font-size:13px;color:var(--text);display:flex;align-items:center;gap:7px;cursor:pointer}
 .cbtn.on{border-width:2px;border-color:var(--text);background:var(--surface);font-weight:500}
 .sr{display:flex;gap:6px}
@@ -233,10 +233,17 @@ function fmtUSD(usd) {
 
 
 const CATS = {
-  food:      { l:'Oziq-ovqat', i:'ti-apple'   },
-  hygiene:   { l:'Gigiyena',   i:'ti-droplet' },
-  household: { l:'Maishiy',    i:'ti-home'    },
-  other:     { l:'Boshqa',     i:'ti-package' },
+  food:      { l:'Oziq-ovqat',    i:'ti-apple'          },
+  hygiene:   { l:'Gigiyena',      i:'ti-droplet'         },
+  household: { l:'Maishiy',       i:'ti-home'            },
+  taxi:      { l:'Taxi/Avtobus',  i:'ti-car'             },
+  education: { l:"Ta'lim",        i:'ti-school'          },
+  sport:     { l:'Sport',         i:'ti-barbell'         },
+  leisure:   { l:'Dam olish',     i:'ti-beach'           },
+  food_out:  { l:'Tashqarida ovqat', i:'ti-tools-kitchen'},
+  medicine:  { l:'Dori-darmon',   i:'ti-first-aid-kit'  },
+  kids:      { l:'Bola uchun',    i:'ti-baby-carriage'  },
+  other:     { l:'Boshqa',        i:'ti-package'         },
 };
 const SC = {
   need_to_buy:{ lbl:'Kerak',   cls:'rd', nl:'Savatga', ni:'ti-shopping-cart', ns:'in_cart' },
@@ -442,7 +449,7 @@ async function aiBatchRename(){
       headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-haiku-4-5-20251001',max_tokens:1000,
-        messages:[{role:'user',content:'Bu mahsulot nomlarini qisqa umumiy o\'zbek nomiga o\'zgartir (1-3 so\'z):\nPishloq turlari→"Pishloq", Sut turlari→"Sut", Tovuq→"Tovuq go\'shti", Go\'sht→"Go\'sht", Sharbat→"Sharbat", Gazli ichimlik→"Gazli suv", Chips→"Chips"\nBoshqalar→qisqa o\'zbek nomi.\nFaqat JSON object: {"asl nom":"yangi nom"}\n\nNomlar: '+JSON.stringify(names)}]
+        messages:[{role:'user',content:'Bu mahsulot nomlarini qisqa umumiy o\'zbek nomiga o\'zgartir (1-3 so\'z):\nPishloq turlari→"Pishloq", Sut turlari→"Sut", Tovuq→"Tovuq go\'shti", Go\'sht→"Go\'sht", Sharbat→"Sharbat", Gazli ichimlik→"Gazli suv", Chips→"Chips", Taxi/Uber/Bolt→"Taxi", Restoran/Kafe→"Ovqat", Dori/vitamin→"Dori"\nBoshqalar→qisqa o\'zbek nomi.\nFaqat JSON object: {"asl nom":"yangi nom"}\n\nNomlar: '+JSON.stringify(names)}]
       })
     });
     const data=await res.json();
@@ -507,25 +514,16 @@ async function scanReceipt(base64,mediaType){
           {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
           {type:'text',text:`Bu rasm chek, buyurtma yoki xarid ro'yxati. Har bir mahsulotni ajrat:
 
-1. OLMA: delivery fee, service fee, tax, subtotal, total, yetkazib berish narxi
+1. OLMA: delivery fee, service fee, tax, subtotal, total, yetkazib berish
 2. Har bir mahsulot uchun:
-   - name: UMUMIY qisqa nom yoz, o'zbek tilida, 1-3 so'z:
-     * Har qanday tovuq (chicken, murgi, دجاج) → "Tovuq go'shti"
-     * Mol/qo'y go'shti → "Go'sht"
-     * Cola, Pepsi, Fanta, Sprite, 7UP → "Gazli suv"
-     * Chips, crackers, snack → "Chips"
-     * Sut → "Sut", qatiq → "Qatiq", pishloq → "Pishloq"
-     * Mevalar → aniq nom: "Olma", "Banan", "Limon"
-     * Sabzavotlar → aniq nom: "Sabzi", "Pomidor", "Piyoz"
-     * Non, lavash → "Non"
-     * Shampun, gel, sovun → qisqa nom: "Shampun", "Sovun"
-     * Boshqa har qanday narsa → eng qisqa umumiy o'zbek nomi
-   - price: mahsulot narxi (asl valyutada, faqat raqam), yo'q bo'lsa null
-   - currency: valyuta kodi (UZS, EGP, USD, AED...)
-   - date: chekdagi sana YYYY-MM-DD formatda, ko'rinmasa "\${today}"
+   - name: qisqa o'zbek nomi (1-3 so'z): tovuq→"Tovuq go'shti", go'sht→"Go'sht", cola/pepsi→"Gazli suv", chips→"Chips", pishloq turi→"Pishloq", sut→"Sut", non→"Non", meva/sabzavot aniq nomi
+   - price: mahsulot narxi (asl valyuta, raqam), yo'q bo'lsa null
+   - currency: UZS/EGP/USD/AED/EUR
+   - date: YYYY-MM-DD (ko'rinmasa "\${today}")
+   - category: food/food_out/taxi/hygiene/household/medicine/sport/education/leisure/kids/other
+     * food=oziq-ovqat * food_out=restoran,kafe,Talabat * taxi=Uber,Bolt,transport * hygiene=shampun,sovun * household=uy * medicine=dori,apteka * sport=gym * education=kurs,kitob * leisure=kino,sayohat * kids=bolalar * other=boshqa
 
-Faqat JSON array qaytar:
-[{"name":"Tovuq go'shti","price":274.95,"currency":"EGP","date":"\${today}"}]`}
+Faqat JSON array: [{"name":"Tovuq go'shti","price":274.95,"currency":"EGP","date":"\${today}","category":"food"}]`}","date":"\${today}"}]`}
         ]}]
       })
     });
@@ -547,12 +545,14 @@ Faqat JSON array qaytar:
         if(lines.length){ parsed=lines.slice(0,10).map(l=>({name:l.replace(/^[-*•\d.]+\s*/,'').trim(),price:null,currency:'UZS',date:today})); }
       }
     }
+    const validCats=['food','food_out','taxi','hygiene','household','medicine','sport','education','leisure','kids','other'];
     const items=Array.isArray(parsed)?parsed.filter(i=>i&&(i.name||typeof i==='string')).map(i=>
-      typeof i==='string'?{name:i.trim(),price:null,currency:'UZS',date:today}:({
+      typeof i==='string'?{name:i.trim(),price:null,currency:state.settings.defaultCurrency||'EGP',date:today,category:'food'}:({
         name:String(i.name||'').trim(),
         price:i.price!=null&&i.price!==''?Number(i.price):null,
-        currency:i.currency||'UZS',
-        date:i.date&&/\d{4}-\d{2}-\d{2}/.test(i.date)?i.date:today
+        currency:i.currency||state.settings.defaultCurrency||'EGP',
+        date:i.date&&/\d{4}-\d{2}-\d{2}/.test(i.date)?i.date:today,
+        category:validCats.includes(i.category)?i.category:'food'
       })
     ).filter(i=>i.name.length>1):[];
     if(!items.length){ notify("Mahsulot topilmadi. Rasmni aniqroq qiling",'err'); upd({scanLoading:false}); return; }
@@ -630,7 +630,7 @@ function addScanItems(){
     const cur=item.currency&&item.currency!=='UZS'?` (${item.currency})`:'';
     return {id:uid(),name:item.name,category:'food',
       price:item.price!=null?item.price:null,
-      currency:item.currency||'UZS',
+      currency:item.currency||state.settings.defaultCurrency||'EGP',
       status:'bought',dateAdded:purchaseDate,purchaseDate,month:m};
   });
   persist([...newItems,...state.items]);
@@ -807,6 +807,13 @@ function render(){
         </div>
       </div>`;
     }
+
+    // Quick expense button
+    h+=`<div style="display:flex;gap:8px;margin-bottom:4px">
+      <button class="add-btn" style="flex:1;justify-content:center;padding:9px" data-a="add-expense">
+        <i class="ti ti-receipt" style="font-size:13px"></i> Tez xarajat (taxi, sport...)
+      </button>
+    </div>`;
 
     // Pills
     h+=`<div class="pills">
@@ -1018,8 +1025,10 @@ function render(){
           </div>
           <div style="flex:1;min-width:0">
             <div class="scan-name">${esc(item.name)}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:1px">
-              ${item.price!=null?`<b>${item.price.toLocaleString('ru-RU')} ${item.currency||'UZS'}</b> &middot; `:''}${item.date||''}
+            <div style="font-size:11px;color:var(--muted);margin-top:1px;display:flex;gap:6px;flex-wrap:wrap">
+              ${item.price!=null?`<b>${item.price.toLocaleString('ru-RU')} ${item.currency||'EGP'}</b>`:''}
+              ${item.category&&item.category!=='food'?`<span style="background:var(--bl-bg);color:var(--bl-t);border-radius:10px;padding:1px 7px;font-size:10px">${(CATS[item.category]||CATS.other).l}</span>`:''}
+              <span style="color:var(--muted)">${item.date||''}</span>
             </div>
           </div>
         </div>`).join('')}
