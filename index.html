@@ -207,6 +207,31 @@ function setApiKey(k){ localStorage.setItem('claude_api_key',k.trim()); }
 const CLAUDE_API_KEY = 'USE_GETTER'; // placeholder
 // ================================================
 
+// ---- VALYUTA KURSLARI ----
+let ratesCache = null, ratesFetched = 0;
+async function getRates() {
+  const now = Date.now();
+  if (ratesCache && now - ratesFetched < 3600000) return ratesCache; // 1 soat kesh
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await res.json();
+    if (data.rates) { ratesCache = data.rates; ratesFetched = now; return data.rates; }
+  } catch(e) {}
+  // Fallback kurslar (taxminiy)
+  return { UZS: 12800, EGP: 50.5, USD: 1, EUR: 0.92, AED: 3.67, RUB: 90 };
+}
+async function toUSD(amount, currency) {
+  if (!amount) return 0;
+  const rates = await getRates();
+  const rate = rates[currency] || rates['UZS'] || 12800;
+  return amount / rate;
+}
+function fmtUSD(usd) {
+  if (!usd) return '$0.00';
+  return '$' + usd.toFixed(2);
+}
+
+
 const CATS = {
   food:      { l:'Oziq-ovqat', i:'ti-apple'   },
   hygiene:   { l:'Gigiyena',   i:'ti-droplet' },
@@ -243,7 +268,14 @@ const app=document.getElementById('app');
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const curYM=()=>{ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; };
 const mLbl=s=>{ const[y,m]=s.split('-'); return `${MONTHS[+m-1]} ${y}`; };
-const fmtP=p=>p==null||p===''?null:Number(p).toLocaleString('ru-RU')+' so\'m';
+function fmtP(p, currency) {
+  if (p == null || p === '') return null;
+  const cur = currency || 'UZS';
+  const symbols = { UZS: "so'm", EGP: 'EGP', USD: '$', EUR: '€', AED: 'AED', RUB: '₽' };
+  const sym = symbols[cur] || cur;
+  if (cur === 'USD') return '$' + Number(p).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  return Number(p).toLocaleString('ru-RU') + ' ' + sym;
+}
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const $id=id=>document.getElementById(id);
 function upd(o,noRender){ Object.assign(state,o); if(!noRender)render(); }
@@ -447,17 +479,27 @@ async function scanReceipt(base64,mediaType){
         model:'claude-haiku-4-5-20251001',max_tokens:1000,
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-          {type:'text',text:`Bu rasm chek, buyurtma yoki xarid ro'yxati. Quyidagilarni ajrat:
+          {type:'text',text:`Bu rasm chek, buyurtma yoki xarid ro'yxati. Har bir mahsulotni ajrat:
 
-1. Faqat MAHSULOTLAR (delivery fee, service fee, tax, subtotal, total — BULARNI OLMA)
+1. OLMA: delivery fee, service fee, tax, subtotal, total, yetkazib berish narxi
 2. Har bir mahsulot uchun:
-   - name: o'zbek tiliga tarjima qil, qisqa va aniq (masalan "Tovuq fileto 1kg", "Chips limon")
-   - price: faqat mahsulot narxi, raqam (har qanday valyuta bo'lsa ham, asl raqamni yoz), yo'q bo'lsa null
-   - currency: valyuta kodi (UZS, EGP, USD, AED va h.k.)
-   - date: rasmda ko'ringan sana YYYY-MM-DD formatda, ko'rinmasa "${today}"
+   - name: UMUMIY qisqa nom yoz, o'zbek tilida, 1-3 so'z:
+     * Har qanday tovuq (chicken, murgi, دجاج) → "Tovuq go'shti"
+     * Mol/qo'y go'shti → "Go'sht"
+     * Cola, Pepsi, Fanta, Sprite, 7UP → "Gazli suv"
+     * Chips, crackers, snack → "Chips"
+     * Sut → "Sut", qatiq → "Qatiq", pishloq → "Pishloq"
+     * Mevalar → aniq nom: "Olma", "Banan", "Limon"
+     * Sabzavotlar → aniq nom: "Sabzi", "Pomidor", "Piyoz"
+     * Non, lavash → "Non"
+     * Shampun, gel, sovun → qisqa nom: "Shampun", "Sovun"
+     * Boshqa har qanday narsa → eng qisqa umumiy o'zbek nomi
+   - price: mahsulot narxi (asl valyutada, faqat raqam), yo'q bo'lsa null
+   - currency: valyuta kodi (UZS, EGP, USD, AED...)
+   - date: chekdagi sana YYYY-MM-DD formatda, ko'rinmasa "\${today}"
 
-Faqat JSON array qaytar, boshqa hech narsa yozma:
-[{"name":"Tovuq fileto 1kg","price":274.95,"currency":"EGP","date":"${today}"}]`}
+Faqat JSON array qaytar:
+[{"name":"Tovuq go'shti","price":274.95,"currency":"EGP","date":"\${today}"}]`}
         ]}]
       })
     });
@@ -758,7 +800,7 @@ function render(){
             <div class="ci"><i class="ti ${cat.i}"></i></div>
             <div class="ii">
               <div class="iname">${esc(item.name)}</div>
-              <div class="isub">${esc(cat.l)}${item.price?' &middot; '+esc(fmtP(item.price)):''}</div>
+              <div class="isub">${esc(cat.l)}${item.price!=null?' &middot; '+esc(fmtP(item.price,item.currency||'UZS')):''}</div>
             </div>
             <div class="iright">
               <span class="bdg ${sc.cls}">${sc.lbl}</span>
@@ -795,7 +837,7 @@ function render(){
         h+=`<div class="shop-item">
           <div class="shop-info">
             <div class="shop-name">${esc(item.name)}</div>
-            <div class="shop-meta">${esc((CATS[item.category]||CATS.other).l)}${item.price?' &middot; '+esc(fmtP(item.price)):''}</div>
+            <div class="shop-meta">${esc((CATS[item.category]||CATS.other).l)}${item.price!=null?' &middot; '+esc(fmtP(item.price,item.currency||'UZS')):''}</div>
           </div>
           <button class="shop-done" data-a="advance" data-v="${item.id}"><i class="ti ti-check"></i></button>
         </div>`;
@@ -818,13 +860,26 @@ function render(){
     const freq={};bought.forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
     const top5=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
     const tD=byM[curYM()]||{t:0,c:0};
+    // Async USD totals calculated separately
+
+    // Per-currency breakdown for this month
+    const thisBought = items.filter(i=>i.status==='bought'&&i.month===curYM()&&i.price);
+    const byCur = {};
+    thisBought.forEach(i=>{
+      const c = i.currency||'UZS';
+      if(!byCur[c]) byCur[c]={total:0,count:0};
+      byCur[c].total += i.price; byCur[c].count++;
+    });
+    const curLines = Object.entries(byCur).map(([c,v])=>`<span style="font-size:13px;color:var(--muted)">${fmtP(v.total,c)}</span>`).join(' <span style="color:var(--muted)">+</span> ');
+    const usdTotal = $id('usd-total-val');
 
     // Budget card
     h+=`<div class="sc">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <div>
           <div style="font-size:12px;color:var(--muted)">Bu oy &mdash; ${mLbl(curYM())}</div>
-          <div style="font-size:26px;font-weight:500;margin-top:2px">${tD.t>0?fmtP(tD.t):'&mdash;'}</div>
+          <div style="font-size:26px;font-weight:500;margin-top:2px" id="usd-total-val">...</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:2px">${curLines||'&mdash;'}</div>
           <div style="font-size:12px;color:var(--muted);margin-top:2px">${tD.c} ta mahsulot</div>
         </div>
         <button style="padding:8px 12px;border:1px solid var(--bd);border-radius:var(--rs);background:var(--surface);font-size:12px;color:var(--muted)" data-a="budget-edit"><i class="ti ti-target" style="font-size:13px"></i> Byudjet</button>
@@ -1001,6 +1056,19 @@ function render(){
   app.innerHTML=h;
 
   if(tab==='add') setTimeout(()=>{const ni=$id('ninp');if(ni)ni.focus();},80);
+  if(tab==='stats'){
+    // Calculate USD total async
+    const statsItems = state.items.filter(i=>i.status==='bought'&&i.month===curYM()&&i.price);
+    if(statsItems.length){
+      Promise.all(statsItems.map(i=>toUSD(i.price,i.currency||'UZS'))).then(vals=>{
+        const total = vals.reduce((s,v)=>s+v,0);
+        const el = $id('usd-total-val');
+        if(el) el.textContent = fmtUSD(total);
+      });
+    } else {
+      setTimeout(()=>{ const el=$id('usd-total-val'); if(el) el.textContent='—'; },0);
+    }
+  }
   if(tab==='stats'&&showBudgetEdit) setTimeout(()=>{const bi=$id('binp');if(bi)bi.focus();},80);
 }
 
