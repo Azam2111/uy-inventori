@@ -320,7 +320,7 @@ function persist(items,settings){
 }
 
 // ── SMART NOTIFS (only essential categories, min 2 purchases) ──
-const JUNK_WORDS = ['chips','muzqaymoq','shokolad','pivo','cola','pepsi','fanta','konfet','shirinlik','biskvit','tort','kfc','burger','pizza','lavash','hotdog','marmelad','saqich'];
+const JUNK_WORDS = ['chips','muzqaymoq','shokolad','pivo','cola','pepsi','fanta','konfet','shirinlik','biskvit','tort','kfc','burger','pizza','lavash','hotdog','marmelad','saqich','yetkazib berish','dostavka','delivery','tax','xizmat','service'];
 function isEssential(item){
   if(!CATS[item.category]?.essential) return false;
   const name = item.name.toLowerCase();
