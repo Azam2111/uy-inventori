@@ -320,6 +320,14 @@ function persist(items,settings){
 }
 
 // ── SMART NOTIFS (only essential categories, min 2 purchases) ──
+const JUNK_WORDS = ['chips','muzqaymoq','shokolad','pivo','cola','pepsi','fanta','konfet','shirinlik','biskvit','tort','kfc','burger','pizza','lavash','hotdog','marmelad','saqich'];
+function isEssential(item){
+  if(!CATS[item.category]?.essential) return false;
+  const name = item.name.toLowerCase();
+  if(JUNK_WORDS.some(w=>name.includes(w))) return false;
+  return true;
+}
+
 function calculateCycle(name){
   const bought=state.items
     .filter(i=>i.name.toLowerCase()===name.toLowerCase()&&i.status==='bought'&&i.purchaseDate)
@@ -333,7 +341,7 @@ function calculateCycle(name){
 
 function checkSmartNotifs(items){
   // Only essential categories get reminders
-  const essentialItems=items.filter(i=>i.status==='bought'&&CATS[i.category]?.essential);
+  const essentialItems=items.filter(i=>i.status==='bought'&&isEssential(i));
   const names=[...new Set(essentialItems.map(i=>i.name))];
   const notifs=[];
   names.forEach(name=>{
@@ -362,7 +370,7 @@ function getAcSuggestions(val){
 // ── QUICK ADD (most bought items) ──
 function getQuickItems(){
   const freq={};
-  state.items.filter(i=>i.status==='bought'&&CATS[i.category]?.essential).forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
+  state.items.filter(i=>i.status==='bought'&&isEssential(i)).forEach(i=>{freq[i.name]=(freq[i.name]||0)+1;});
   return Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([name,count])=>({name,count}));
 }
 
