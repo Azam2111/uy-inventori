@@ -448,7 +448,7 @@ async function scanReceipt(base64,mediaType){
         messages:[{role:'user',content:[
           {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
           {type:'text',text:`Bu rasm chek yoki buyurtma. Qoidalar:
-1. delivery fee, service fee, tax, subtotal, total OLMAYDI
+1. "yetkazib berish", "delivery fee", "service fee", "tax", "subtotal", "total", "dostavka" kabi so'zlarni alohida mahsulot sifatida OLMA! Ularning pulini asosiy mahsulotlar narxiga qo'shib yubor.
 2. Har bir mahsulot uchun:
    - name: qisqa o'zbek nomi (1-3 so'z)
    - price: narxi (raqam, yo'q bo'lsa null)
@@ -457,6 +457,7 @@ async function scanReceipt(base64,mediaType){
    - category: food/food_out/taxi/hygiene/household/medicine/sport/education/leisure/kids/other
    - is_delivery: true (agar bu restoran/dostavka/kafe buyurtmasi bo'lsa), false (do'kon cheki)
 
+Agar is_delivery=true bo'lsa, barcha ovqatlarni yig'ib bitta "Restoran buyurtmasi" deb umumiy narx bilan yozsang ham bo'ladi, yoki alohida yoz. Lekin yetkazib berishni alohida yozma!
 JSON array: [{"name":"Tovuq","price":150,"currency":"${defCur}","date":"${today}","category":"food","is_delivery":false}]`}
         ]}]})
     });
